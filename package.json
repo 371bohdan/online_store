@@ -1,28 +1,33 @@
 {
-  "name": "online_store",
-  "version": "1.0.0",
-  "main": "app.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node dist/app.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/app.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.1",
-    "mongoose": "^8.9.3"
-  },
-  "devDependencies": {
-    "@types/dotenv": "^6.1.1",
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.5",
-    "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.7.2"
-  }
+    "name": "online_store",
+    "version": "1.0.0",
+    "main": "app.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "npm run build && node dist/app.js",
+        "dev": "ts-node-dev --respawn --transpile-only src/app.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "dotenv": "^16.4.7",
+        "express": "^4.21.1",
+        "mongoose": "^8.9.3",
+        "mongoose-to-swagger": "^1.5.1",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
+    },
+    "devDependencies": {
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.10.5",
+        "@types/swagger-jsdoc": "^6.0.4",
+        "@types/swagger-ui-express": "^4.1.7",
+        "nodemon": "^3.1.9",
+        "ts-node": "^10.9.2",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.7.2"
+    }
 }

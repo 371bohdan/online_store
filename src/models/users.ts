@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongooseToSwagger from 'mongoose-to-swagger'
 
 export interface IUser extends mongoose.Document {
     email: string,
@@ -36,4 +37,5 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
 })
 
 const User: mongoose.Model<IUser> = mongoose.model<IUser>('User', userSchema);
+export const userSwaggerSchema = mongooseToSwagger(User);
 export default User;
