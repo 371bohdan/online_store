@@ -29,5 +29,9 @@ import User, { IUser } from './models/users';
 const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users");
 app.use('/api/users', userRoute);
 
+//auth routes
+import authRoute from './routes/authRoute';
+app.use('/api/auth', authRoute);
+
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));
