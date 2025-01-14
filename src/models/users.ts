@@ -6,7 +6,8 @@ export interface IUser extends mongoose.Document {
     password: string,
     firstName: string,
     lastName: string,
-    avatar: string
+    avatar: string,
+    recoveryId: string
 }
 
 const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
@@ -33,6 +34,12 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
     avatar: {
         type: String,
         required: false
+    },
+
+    recoveryId: {
+        type: String,
+        required: false,
+        default: undefined
     }
 })
 

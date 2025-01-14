@@ -3,7 +3,6 @@ import genericCrudController from '../controllers/genericCrudController';
 import { Document, Model } from 'mongoose';
 import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
-import { error } from 'console';
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string): express.Router => {
     const router: express.Router = express.Router();
@@ -173,6 +172,7 @@ function swagger(modelName: String): void {
 function getTheSwaggerSchema(modelName: String) {
     switch (modelName) {
         case 'users':
+            delete userSwaggerSchema.properties.recoveryId
             return userSwaggerSchema;
     }
 }
