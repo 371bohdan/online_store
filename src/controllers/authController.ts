@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import User from "../models/users";
 import mailController from "../mail/mailController";
 import { randomUUID } from "crypto";
+import jwt from 'jsonwebtoken';
 
 const authController = {
     signUp: async (req: Request, res: Response): Promise<void> => {
@@ -42,6 +43,29 @@ const authController = {
 
 function encryptPassword(password: string): string {
     return bcrypt.hashSync(password, 10);
+}
+
+function generateJwtToken() {
+    const data = {
+        time: Date(),
+        userId: 12
+    };
+
+    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    return jwt.sign(data, jwtSecretKey);
+}
+
+function isJwtTokenValid(req: Request) {
+    const tokenHeaderKey = process.env.TOKEN_HEADER_KEY || '';
+    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+
+    const token = req.header(tokenHeaderKey) || '';
+    const verified = jwt.verify(token, jwtSecretKey);
+    if (verified) {
+        return true
+    }
+
+    return false;
 }
 
 const RECOVER_ACCOUNT_URI: String = process.env.HOST_URI + '/api/auth/accountRecovery';
