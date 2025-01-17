@@ -22,9 +22,9 @@ const router: express.Router = express.Router();
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
- *                  required:
- *                      - email
- *                      - password
+ *                      required:
+ *                          - email
+ *                          - password
  *      responses:
  *          200:
  *              description: Success
@@ -102,5 +102,37 @@ router.post('/accountRecovery', authController.accountRecovery);
  *              description: Internal server error
  */
 router.post('/verify/:id', authController.verifyAndChangePassword);
+
+/**
+ * @swagger
+ * /api/auth/signIn:
+ *  post:
+ *      tags:
+ *          - Auth API
+ *      summary: account login
+ *      requestBody:
+ *          required: true
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: example@gmail.com
+ *                          password:
+ *                              type: string
+ *                  required:
+ *                      - email
+ *                      - password
+ *      responses:
+ *          200:
+ *              description: Success
+ *          400:
+ *              description: Incorrect incoming data (email or password).
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/signIn', authController.signIn);
 
 export default router;

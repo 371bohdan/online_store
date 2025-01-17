@@ -6,8 +6,18 @@ const options = {
         info: {
             title: 'Lumen Online Store',
             version: '1.0.0',
-        }
+        },
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        },
     },
+
     apis: ['./src/routes/*.ts']
 }
 
