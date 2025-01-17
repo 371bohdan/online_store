@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGODB_URI || '');
 
 //user routes
 import User, { IUser } from './models/users';
-const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users");
+const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']);
 app.use('/api/users', userRoute);
 
 //auth routes

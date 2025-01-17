@@ -7,7 +7,8 @@ export interface IUser extends mongoose.Document {
     firstName: string,
     lastName: string,
     avatar: string,
-    recoveryId: string
+    recoveryId: string,
+    role: string
 }
 
 const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
@@ -40,6 +41,12 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         type: String,
         required: false,
         default: undefined
+    },
+
+    role: {
+        type: String,
+        enum: ['USER', 'ADMIN'],
+        default: 'USER'
     }
 })
 

@@ -3,25 +3,49 @@ import genericCrudController from '../controllers/genericCrudController';
 import { Document, Model } from 'mongoose';
 import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
+import { verifyAdminRole } from '../controllers/authController';
 
-const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string): express.Router => {
+const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string, methodsToSecure: Array<String>): express.Router => {
     const router: express.Router = express.Router();
     const controller = genericCrudController(Model);
 
     //swagger
-    swagger(modelName);
+    swagger(modelName, methodsToSecure);
 
     //routes
-    router.get('/', controller.getAll);
-    router.get('/:id', controller.getById);
-    router.post('/', controller.create);
-    router.put('/:id', controller.update);
-    router.delete('/', controller.removeAll);
-    router.delete('/:id', controller.removeById);
+    if (methodsToSecure.includes('get')) {
+        router.get('/', verifyAdminRole, controller.getAll);
+        router.get('/:id', verifyAdminRole, controller.getById);
+    } else {
+        router.get('/', controller.getAll);
+        router.get('/:id', controller.getById);
+    }
+
+    if (methodsToSecure.includes('post')) {
+        router.post('/', verifyAdminRole, controller.create);
+    } else {
+        router.post('/', controller.create);
+    }
+
+
+    if (methodsToSecure.includes('post')) {
+        router.put('/:id', verifyAdminRole, controller.update);
+    } else {
+        router.put('/:id', controller.update);
+    }
+
+    if (methodsToSecure.includes('post')) {
+        router.delete('/', verifyAdminRole, controller.removeAll);
+        router.delete('/:id', verifyAdminRole, controller.removeById);
+    } else {
+        router.delete('/', controller.removeAll);
+        router.delete('/:id', controller.removeById);
+    }
+
     return router;
 }
 
-function swagger(modelName: String): void {
+function swagger(modelName: String, methodsToSecure: Array<String>): void {
     const modelNameSingular: String = modelName.substring(0, modelName.length - 1);
     const swaggerSchema = getTheSwaggerSchema(modelName);
     delete swaggerSchema.properties._id   //removing _id property for model Object
@@ -165,6 +189,69 @@ function swagger(modelName: String): void {
                     description: 'Internal server error'
                 }
             }
+        }
+    }
+
+    //secure
+    if (methodsToSecure.includes('get')) {
+        swaggerOptions.paths[`/api/${modelName}`]['get'] = {
+            ...swaggerOptions.paths[`/api/${modelName}`]['get'],
+            security: [
+                {
+                    bearerAuth: []
+                },
+            ],
+        }
+
+        swaggerOptions.paths[`/api/${modelName}/{id}`]['get'] = {
+            ...swaggerOptions.paths[`/api/${modelName}/{id}`]['get'],
+            security: [
+                {
+                    bearerAuth: []
+                },
+            ],
+        }
+    }
+
+    if (methodsToSecure.includes('post')) {
+        swaggerOptions.paths[`/api/${modelName}`]['post'] = {
+            ...swaggerOptions.paths[`/api/${modelName}`]['post'],
+            security: [
+                {
+                    bearerAuth: []
+                },
+            ],
+        }
+    }
+
+    if (methodsToSecure.includes('put')) {
+        swaggerOptions.paths[`/api/${modelName}/{id}`]['put'] = {
+            ...swaggerOptions.paths[`/api/${modelName}/{id}`]['put'],
+            security: [
+                {
+                    bearerAuth: []
+                },
+            ],
+        }
+    }
+
+    if (methodsToSecure.includes('delete')) {
+        swaggerOptions.paths[`/api/${modelName}`]['delete'] = {
+            ...swaggerOptions.paths[`/api/${modelName}`]['delete'],
+            security: [
+                {
+                    bearerAuth: []
+                },
+            ],
+        }
+
+        swaggerOptions.paths[`/api/${modelName}/{id}`]['delete'] = {
+            ...swaggerOptions.paths[`/api/${modelName}/{id}`]['delete'],
+            security: [
+                {
+                    bearerAuth: []
+                },
+            ],
         }
     }
 }
