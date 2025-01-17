@@ -3,6 +3,7 @@ import genericCrudController from '../controllers/genericCrudController';
 import { Document, Model } from 'mongoose';
 import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
+import {productSwaggerSchema} from '../models/products';
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string): express.Router => {
     const router: express.Router = express.Router();
@@ -174,7 +175,12 @@ function getTheSwaggerSchema(modelName: String) {
         case 'users':
             delete userSwaggerSchema.properties.recoveryId
             return userSwaggerSchema;
+        case 'products': 
+            delete productSwaggerSchema.properties._id;  // Видаляємо _id, якщо не потрібно в схемі
+            return productSwaggerSchema;
     }
+
 }
+
 
 export default genericCrudRoute;

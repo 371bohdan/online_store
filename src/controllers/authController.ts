@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from 'bcryptjs'
-import User from "../models/users";
+import User, { IUser } from "../models/users";
 import mailController from "../mail/mailController";
 import { randomUUID } from "crypto";
 import jwt from 'jsonwebtoken';
+import { ObjectId } from "mongoose";
 
 const authController = {
     signUp: async (req: Request, res: Response): Promise<void> => {
@@ -18,6 +19,21 @@ const authController = {
                 'Your account has been successfully created. Have fun!');
             res.json(createdUser);
         }
+    },
+
+    signIn: async (req: Request, res: Response): Promise<void> => {
+        const user: IUser | null = await User.findOne({ email: req.body.email });
+        if (user) {
+            if (bcrypt.compareSync(req.body.password, user.password)) {
+                const generatedToken = generateJwtToken(user.id);
+                res.send(generatedToken);
+            } else {
+                res.status(400).send('Incorrect incoming data (email or password).');
+            }
+        } else {
+            res.status(400).send('Incorrect incoming data (email or password).');
+        }
+
     },
 
     accountRecovery: async (req: Request, res: Response): Promise<void> => {
@@ -38,34 +54,33 @@ const authController = {
         } else {
             res.status(404).json('User not found');
         }
-    }
+    },
 }
 
 function encryptPassword(password: string): string {
     return bcrypt.hashSync(password, 10);
 }
 
-function generateJwtToken() {
+function generateJwtToken(userId: ObjectId) {
     const data = {
         time: Date(),
-        userId: 12
+        userId
     };
 
     const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
     return jwt.sign(data, jwtSecretKey);
 }
 
-function isJwtTokenValid(req: Request) {
-    const tokenHeaderKey = process.env.TOKEN_HEADER_KEY || '';
+export const verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    const token = req.headers.authorization || '';
 
-    const token = req.header(tokenHeaderKey) || '';
-    const verified = jwt.verify(token, jwtSecretKey);
+    const tokenWithoutBearer = token.substring(7, token?.length);
+    const verified = jwt.verify(tokenWithoutBearer, jwtSecretKey);
     if (verified) {
-        return true
+        next();
     }
-
-    return false;
+    res.status(401).send('Incorrect auth token');
 }
 
 const RECOVER_ACCOUNT_URI: String = process.env.HOST_URI + '/api/auth/accountRecovery';
