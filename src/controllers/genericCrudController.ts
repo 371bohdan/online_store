@@ -15,7 +15,7 @@ const genericCrudController = <T extends Document>(Model: Model<T>) => ({
 
     create: async (req: Request, res: Response): Promise<void> => {
         const item = new Model(req.body);
-        res.json(await Model.create(item));
+        res.status(201).json(await Model.create(item));
     },
 
     update: async (req: Request, res: Response): Promise<void> => {
@@ -27,7 +27,7 @@ const genericCrudController = <T extends Document>(Model: Model<T>) => ({
     removeById: async (req: Request, res: Response): Promise<void> => {
         const { id } = req.params;
         await Model.findByIdAndDelete(id);
-        res.send(`The '${id}' object was successfully removed.`)
+        res.send(`${Model.modelName} with id '${id}' was successfully removed.`)
     },
 
     removeAll: async (req: Request, res: Response): Promise<void> => {
