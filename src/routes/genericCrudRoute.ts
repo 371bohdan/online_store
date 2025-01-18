@@ -1,9 +1,13 @@
-import express from 'express';
+import express from 'express'
+import multer from 'multer';
 import genericCrudController from '../controllers/genericCrudController';
 import { Document, Model } from 'mongoose';
 import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
-import {productSwaggerSchema} from '../models/products';
+import { productSwaggerSchema } from '../models/products';
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string): express.Router => {
     const router: express.Router = express.Router();
@@ -15,8 +19,11 @@ const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string
     //routes
     router.get('/', controller.getAll);
     router.get('/:id', controller.getById);
-    router.post('/', controller.create);
-    router.put('/:id', controller.update);
+    // Створення з підтримкою завантаження файлів
+    router.post('/', upload.single('file'), controller.create);
+
+    // Оновлення з підтримкою завантаження файлів
+    router.put('/:id', upload.single('file'), controller.update);
     router.delete('/', controller.removeAll);
     router.delete('/:id', controller.removeById);
     return router;

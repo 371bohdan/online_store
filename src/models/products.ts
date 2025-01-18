@@ -29,14 +29,17 @@ const DescribeSchema = new Schema<Describe>({
     aroma: { type: String, required: true },
     burning_time: { type: String, required: true },
     short_describe: { type: String, required: true },
-});
+}, { _id: false });
 
 const ProductSchema = new Schema<IProduct>({
     title: { type: String, required: true },
-    price: { type: Schema.Types.Mixed, required: true }, // Приймає string або number
+    price: { type: Number, required: true, min: 0}, // Приймає string або number
     image: { type: String, required: true },
     describe: { type: DescribeSchema, required: true },
-    comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], // Посилання на таблицю Comments
+    comments: { 
+      type: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+      default: [] // Це зробить масив порожнім за замовчуванням
+  }, // Посилання на таблицю Comments
     collections: {
       type: String,
       enum: Object.values(CollectionsEnum),

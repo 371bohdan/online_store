@@ -4,10 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const multer_1 = __importDefault(require("multer"));
 const genericCrudController_1 = __importDefault(require("../controllers/genericCrudController"));
 const swaggerOptions_1 = __importDefault(require("../swagger/swaggerOptions"));
 const users_1 = require("../models/users");
 const products_1 = require("../models/products");
+const storage = multer_1.default.memoryStorage();
+const upload = (0, multer_1.default)({ storage: storage });
 const genericCrudRoute = (Model, modelName) => {
     const router = express_1.default.Router();
     const controller = (0, genericCrudController_1.default)(Model);
@@ -16,8 +19,10 @@ const genericCrudRoute = (Model, modelName) => {
     //routes
     router.get('/', controller.getAll);
     router.get('/:id', controller.getById);
-    router.post('/', controller.create);
-    router.put('/:id', controller.update);
+    // Створення з підтримкою завантаження файлів
+    router.post('/', upload.single('file'), controller.create);
+    // Оновлення з підтримкою завантаження файлів
+    router.put('/:id', upload.single('file'), controller.update);
     router.delete('/', controller.removeAll);
     router.delete('/:id', controller.removeById);
     return router;
