@@ -6,8 +6,7 @@ dotenv.config();
 import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
-import User, { IUser } from './models/users';
-import Product, { IProduct } from './models/products';
+
 
 //entry point
 const app = express();
@@ -28,10 +27,16 @@ mongoose.connect(process.env.MONGODB_URI || '');
 
 //user routes
 
-const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users");
-const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products");
+//user routes
+import User, { IUser } from './models/users';
+const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']);
 app.use('/api/users', userRoute);
+
+//product general routes
+import Product, { IProduct } from './models/products';
+const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['get', 'post', 'put', 'delete']);
 app.use('/api/products', productRoute);
+
 
 //auth routes
 import authRoute from './routes/authRoute';
@@ -40,6 +45,9 @@ app.use('/api/auth', authRoute);
 // Oprations with product
 import productOptRoute from './routes/productOptRoute';
 app.use('/api/productopt', productOptRoute);
+
+import imageRoute from './routes/imageRoute';
+app.use('/api/image', imageRoute);
 
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));

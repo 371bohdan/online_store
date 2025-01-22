@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Product from "../models/products";
+import uploadToSupabase from "../supabase/supabaseUtils";
 
 const productOptController = {
     searchForName: async (req: Request, res: Response): Promise<void> => {
@@ -50,7 +51,29 @@ const productOptController = {
             console.error("Error sorting products by price:", error);
             res.status(500).json({ message: "Internal server error", error });
         }
-    }
+    },
+    uploadImage: async (req: Request, res: Response): Promise<void> => {
+        try {
+            const file = req.file;
+            if (!file) {
+                res.status(400).json({ message: "No file uploaded" });
+                return;
+            }
+
+            const bucketName = "product-images"; // Назва бакету в Supabase
+            const publicUrl = await uploadToSupabase(file, bucketName);
+
+            if (!publicUrl) {
+                res.status(500).json({ message: "Failed to upload image" });
+                return;
+            }
+
+            res.status(201).json({ message: "Image uploaded successfully", url: publicUrl });
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            res.status(500).json({ message: "Internal server error", error });
+        }
+    },
 };
 
 export default productOptController;

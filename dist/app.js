@@ -44,8 +44,6 @@ dotenv.config();
 const genericCrudRoute_1 = __importDefault(require("./routes/genericCrudRoute"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swaggerOptions_1 = __importDefault(require("./swagger/swaggerOptions"));
-const users_1 = __importDefault(require("./models/users"));
-const products_1 = __importDefault(require("./models/products"));
 //entry point
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
@@ -61,9 +59,13 @@ app.use('/', home_1.default);
 //database connection
 mongoose_1.default.connect(process.env.MONGODB_URI || '');
 //user routes
-const userRoute = (0, genericCrudRoute_1.default)(users_1.default, "users");
-const productRoute = (0, genericCrudRoute_1.default)(products_1.default, "products");
+//user routes
+const users_1 = __importDefault(require("./models/users"));
+const userRoute = (0, genericCrudRoute_1.default)(users_1.default, "users", ['get', 'post', 'put', 'delete']);
 app.use('/api/users', userRoute);
+//product general routes
+const products_1 = __importDefault(require("./models/products"));
+const productRoute = (0, genericCrudRoute_1.default)(products_1.default, "products", ['get', 'post', 'put', 'delete']);
 app.use('/api/products', productRoute);
 //auth routes
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
@@ -71,5 +73,7 @@ app.use('/api/auth', authRoute_1.default);
 // Oprations with product
 const productOptRoute_1 = __importDefault(require("./routes/productOptRoute"));
 app.use('/api/productopt', productOptRoute_1.default);
+const imageRoute_1 = __importDefault(require("./routes/imageRoute"));
+app.use('/api/image', imageRoute_1.default);
 //swagger
 app.use('/api/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerOptions_1.default));

@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import User, { IUser } from "../models/users";
 import mailController from "../mail/mailController";
 import { randomUUID } from "crypto";
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from "mongoose";
 
 const authController = {
@@ -54,7 +54,7 @@ const authController = {
         } else {
             res.status(404).json('User not found');
         }
-    },
+    }
 }
 
 function encryptPassword(password: string): string {
@@ -71,16 +71,32 @@ function generateJwtToken(userId: ObjectId) {
     return jwt.sign(data, jwtSecretKey);
 }
 
-export const verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
-    const token = req.headers.authorization || '';
-
-    const tokenWithoutBearer = token.substring(7, token?.length);
-    const verified = jwt.verify(tokenWithoutBearer, jwtSecretKey);
-    if (verified) {
-        next();
+export const verifyAdminRole = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const bearerToken = req.headers.authorization || '';
+    if (bearerToken.length === 0) {
+        return res.status(401).send('You don\'t have an auth token');
     }
-    res.status(401).send('Incorrect auth token');
+
+    const token = bearerToken.substring(7, bearerToken.length) || '';
+    const jwtPayload = getJwtPayload(token);
+
+    if (typeof jwtPayload !== 'string') {
+        const user = await User.findById(jwtPayload.userId);
+
+        if (user?.role === 'ADMIN') {
+            next();
+            return;
+        }
+
+        return res.status(403).send('You don\'t have access to interact with this route.');
+    }
+
+    return res.status(401).send('Incorrect auth token');
+}
+
+function getJwtPayload(token: string): JwtPayload | string {
+    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    return jwt.verify(token, jwtSecretKey);
 }
 
 const RECOVER_ACCOUNT_URI: String = process.env.HOST_URI + '/api/auth/accountRecovery';

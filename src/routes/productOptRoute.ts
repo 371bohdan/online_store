@@ -1,5 +1,6 @@
 import express from "express";
 import productOptController from "../controllers/productOptController";
+import upload from "../supabase/uploadMiddleweare";
 
 const router: express.Router = express.Router();
 
@@ -58,6 +59,37 @@ router.get('/title', productOptController.searchForName);
  *         description: Internal server error
  */
 
+
 router.get('/sort', productOptController.sortForPrice);
+
+
+
+/**
+ * @swagger
+ * /api/productopt/upload:
+ *   get:
+ *     tags:
+ *       - downlaod image
+ *     summary: completed download to Supabase bucket
+ *     parameters:
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         required: true
+ *         description: Sort order for price (asc or desc)
+ *     responses:
+ *       200:
+ *         description: Success
+ *       400:
+ *         description: The query parameter is missing or invalid
+ *       500:
+ *         description: Internal server error
+ */
+
+// Завантаження зображення
+router.post('/upload', upload.single('file'), productOptController.uploadImage);
+
 
 export default router;
