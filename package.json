@@ -1,18 +1,44 @@
 {
-  "name": "online_store",
-  "version": "1.0.0",
-  "main": "app.js",
-  "scripts": {
-    "start": "nodemon app.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "express": "^4.21.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.7"
-  }
+    "name": "online_store",
+    "version": "1.0.0",
+    "main": "app.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "npm run build && node dist/app.js",
+        "dev": "ts-node-dev --respawn --transpile-only src/app.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "jsonwebtoken": "^9.0.2",
+        "mime-types": "^2.1.35",
+        "mongoose": "^8.9.3",
+        "mongoose-to-swagger": "^1.5.1",
+        "multer": "^1.4.5-lts.1",
+        "nodemailer": "^6.9.16",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
+    },
+    "devDependencies": {
+        "@supabase/supabase-js": "^2.47.16",
+        "@types/bcryptjs": "^2.4.6",
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^5.0.0",
+        "@types/jsonwebtoken": "^9.0.7",
+        "@types/mime-types": "^2.1.4",
+        "@types/multer": "^1.4.12",
+        "@types/node": "^22.10.7",
+        "@types/nodemailer": "^6.4.17",
+        "@types/swagger-jsdoc": "^6.0.4",
+        "@types/swagger-ui-express": "^4.1.7",
+        "nodemon": "^3.1.9",
+        "ts-node": "^10.9.2",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.7.2"
+    }
 }
