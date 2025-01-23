@@ -35,8 +35,9 @@ const CartSchema = new Schema<ICart>(
                     },
                 },
             ],
+            required: false,
             default: [],
-             
+
         },
     });
 
