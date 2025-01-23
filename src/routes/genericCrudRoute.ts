@@ -4,6 +4,7 @@ import { Document, Model } from 'mongoose';
 import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
 import { productSwaggerSchema } from '../models/products';
+import { cartSwaggerSchema } from '../models/carts';
 import { verifyAdminRole } from '../controllers/authController';
 
 
@@ -268,6 +269,8 @@ function getTheSwaggerSchema(modelName: String) {
             return userSwaggerSchema;
         case 'products':
             return productSwaggerSchema;
+        case 'carts':
+            return cartSwaggerSchema
         default:
             throw new Error(`Swagger schema not defined for model: ${modelName}`);
     }

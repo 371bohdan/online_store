@@ -37,6 +37,11 @@ import Product, { IProduct } from './models/products';
 const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['get', 'post', 'put', 'delete']);
 app.use('/api/products', productRoute);
 
+//carts general routes
+import Cart, { ICart } from './models/carts';
+const cartRoute: express.Router = genericCrudRoute(Cart as Model<ICart>, "carts", ['get', 'post', 'put', 'delete']);
+app.use('/api/carts', cartRoute);
+
 //auth routes
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
