@@ -14,9 +14,11 @@ const authController = {
         if (isUserExist) {
             res.status(400).json("The email already used.")
         } else {
+            const verificationCode = randomUUID();
+            req.body.verificationCode = verificationCode;
             const createdUser = await User.create(req.body);
             mailController.sendMail(req.body.email, 'Registration on the Lumen online store',
-                'Your account has been successfully created. Have fun!');
+                `Your account has been successfully created, but you need to verify it. Follow the link: ${VERIFY_EMAIL_URI}/${verificationCode}`);
             res.json(createdUser);
         }
     },
@@ -24,9 +26,17 @@ const authController = {
     signIn: async (req: Request, res: Response): Promise<void> => {
         const user: IUser | null = await User.findOne({ email: req.body.email });
         if (user) {
+
             if (bcrypt.compareSync(req.body.password, user.password)) {
-                const generatedToken = generateJwtToken(user.id);
-                res.send(generatedToken);
+
+                if (user.isVerified) {
+
+                    const generatedToken = generateJwtToken(user.id);
+                    res.send(generatedToken);
+                } else {
+                    res.status(400).send('You need to verify your email.');
+                }
+
             } else {
                 res.status(400).send('Incorrect incoming data (email or password).');
             }
@@ -51,6 +61,18 @@ const authController = {
         if (updatedUser) {
             mailController.sendMail(updatedUser?.email, 'Lumen Online Store', 'Your account has been successfully restored and your password changed!');
             res.json('Successfully verified.');
+        } else {
+            res.status(404).json('User not found');
+        }
+    },
+
+    verifyEmail: async (req: Request, res: Response): Promise<void> => {
+        const user = await User.findOneAndUpdate({ verificationCode: req.params.id }, { verificationCode: null, isVerified: true });
+
+        if (user) {
+            mailController.sendMail(user?.email, 'Lumen Online Store', 'Your account has been successfully verified. Have fun!');
+            res.json('Successfully verified.');
+
         } else {
             res.status(404).json('User not found');
         }
@@ -100,5 +122,6 @@ function getJwtPayload(token: string): JwtPayload | string {
 }
 
 const RECOVER_ACCOUNT_URI: String = process.env.HOST_URI + '/api/auth/accountRecovery';
+const VERIFY_EMAIL_URI: String = process.env.HOST_URI + '/api/auth/verifyEmail';
 
 export default authController;

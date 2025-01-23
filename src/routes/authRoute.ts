@@ -64,7 +64,29 @@ router.post('/signUp', authController.signUp);
  */
 router.post('/accountRecovery', authController.accountRecovery);
 
-//working all (registr) except verify method (doesn't work properly)
+/**
+ * @swagger
+ * /api/auth/verifyEmail/{id}:
+ *  get:
+ *      tags:
+ *          - Auth API
+ *      summary: User email confirmation
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Type a verification code in the line below
+ *      responses:
+ *          200:
+ *              description: Success
+ *          404:
+ *              description: User not found
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/verifyEmail/:id', authController.verifyEmail);
 
 /**
  * @swagger
@@ -79,7 +101,7 @@ router.post('/accountRecovery', authController.accountRecovery);
  *            required: true
  *            schema:
  *              type: string
- *            description: Type a new password in the line below
+ *            description: Type a verification code in the line below
  *      requestBody:
  *          required: true
  *          content: 
