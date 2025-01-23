@@ -5,6 +5,7 @@ import mailController from "../mail/mailController";
 import { randomUUID } from "crypto";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from "mongoose";
+import { ENV } from "../dotenv/env";
 
 const authController = {
     signUp: async (req: Request, res: Response): Promise<void> => {
@@ -89,7 +90,7 @@ function generateJwtToken(userId: ObjectId) {
         userId
     };
 
-    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    const jwtSecretKey = ENV.JWT_SECRET_KEY || '';
     return jwt.sign(data, jwtSecretKey);
 }
 
@@ -117,11 +118,11 @@ export const verifyAdminRole = async (req: Request, res: Response, next: NextFun
 }
 
 function getJwtPayload(token: string): JwtPayload | string {
-    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    const jwtSecretKey = ENV.JWT_SECRET_KEY || '';
     return jwt.verify(token, jwtSecretKey);
 }
 
-const RECOVER_ACCOUNT_URI: String = process.env.HOST_URI + '/api/auth/accountRecovery';
-const VERIFY_EMAIL_URI: String = process.env.HOST_URI + '/api/auth/verifyEmail';
+const RECOVER_ACCOUNT_URI: String = ENV.HOST_URI + '/api/auth/accountRecovery';
+const VERIFY_EMAIL_URI: String = ENV.HOST_URI + '/api/auth/verifyEmail';
 
 export default authController;

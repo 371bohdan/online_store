@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import Product from "../models/products";
 import uploadToSupabase from "../supabase/supabaseUtils";
+import { ENV } from "../dotenv/env";
 
 const productOptController = {
+
     searchForName: async (req: Request, res: Response): Promise<void> => {
         try {
             const { title, sort } = req.query;
@@ -30,6 +32,7 @@ const productOptController = {
             res.status(500).json({ message: "Internal server error", error });
         }
     },
+
     sortForPrice: async (req: Request, res: Response): Promise<void> => {
         try {
             const { sort } = req.query;
@@ -52,6 +55,7 @@ const productOptController = {
             res.status(500).json({ message: "Internal server error", error });
         }
     },
+
     uploadImage: async (req: Request, res: Response): Promise<void> => {
         try {
             const file = req.file;
@@ -60,7 +64,7 @@ const productOptController = {
                 return;
             }
 
-            const bucketName = "product-images"; // Назва бакету в Supabase
+            const bucketName = ENV.SUPABASE_BUCKET_NAME; // Назва бакету в Supabase
             const publicUrl = await uploadToSupabase(file, bucketName);
 
             if (!publicUrl) {

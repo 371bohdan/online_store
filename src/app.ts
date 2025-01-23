@@ -1,16 +1,14 @@
 import express, { Request, Response } from 'express'
 import mongoose, { Model } from 'mongoose';
 import homeRoutes from './routes/home' // потім можна змінити на інший котрий потрібен маршрут
-import * as dotenv from 'dotenv'; //зберігання необхідних даних (необов'язково але на випадок якщо потрібно сховати конф дані) 
-dotenv.config();
 import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
-
+import { ENV } from './dotenv/env';
 
 //entry point
 const app = express();
-const port = process.env.PORT || 3000;
+const port = ENV.PORT;
 const run = () => {
     app.listen(port, () => {
         console.log(`This server runs on http://localhost:${port}`);
@@ -23,7 +21,7 @@ app.use(express.json());
 app.use('/', homeRoutes);
 
 //database connection
-mongoose.connect(process.env.MONGODB_URI || '');
+mongoose.connect(ENV.MONGODB_URI);
 
 //user routes
 
