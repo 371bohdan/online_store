@@ -37,7 +37,6 @@ import Product, { IProduct } from './models/products';
 const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['get', 'post', 'put', 'delete']);
 app.use('/api/products', productRoute);
 
-
 //auth routes
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
@@ -46,11 +45,5 @@ app.use('/api/auth', authRoute);
 import productOptRoute from './routes/productOptRoute';
 app.use('/api/productopt', productOptRoute);
 
-import imageRoute from './routes/imageRoute';
-app.use('/api/image', imageRoute);
-
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));
-
-
-

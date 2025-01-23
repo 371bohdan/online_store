@@ -6,9 +6,11 @@ export interface IUser extends mongoose.Document {
     password: string,
     firstName: string,
     lastName: string,
-    avatar: Types.ObjectId; 
+    avatar: String;
     recoveryId: string,
-    role: string
+    role: string,
+    isVerified: Boolean,
+    verificationCode: string
 }
 
 const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
@@ -32,9 +34,9 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         required: false
     },
 
-    avatar: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Image'  // Посилання на зображення
+    avatar: {
+        type: String,
+        required: false
     },
     recoveryId: {
         type: String,
@@ -46,7 +48,17 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         type: String,
         enum: ['USER', 'ADMIN'],
         default: 'USER'
-    }
+    },
+
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+
+    verificationCode: {
+        type: String,
+        required: true
+    },
 })
 
 const User: mongoose.Model<IUser> = mongoose.model<IUser>('User', userSchema);

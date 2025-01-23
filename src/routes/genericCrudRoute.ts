@@ -5,7 +5,8 @@ import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
 import { productSwaggerSchema } from '../models/products';
 import { verifyAdminRole } from '../controllers/authController';
-import { imageSwaggerSchema } from '../models/images';
+
+
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string, methodsToSecure: Array<String>): express.Router => {
     const router: express.Router = express.Router();
@@ -13,9 +14,6 @@ const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string
 
     //swagger
     swagger(modelName, methodsToSecure);
-
-
-
 
     //routes
     if (methodsToSecure.includes('get')) {
@@ -270,8 +268,6 @@ function getTheSwaggerSchema(modelName: String) {
             return userSwaggerSchema;
         case 'products':
             return productSwaggerSchema;
-        case 'images':
-            return imageSwaggerSchema;
         default:
             throw new Error(`Swagger schema not defined for model: ${modelName}`);
     }

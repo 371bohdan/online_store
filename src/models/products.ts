@@ -17,7 +17,7 @@ interface Describe {
 export interface IProduct extends Document {
     title: string;
     price: number;
-    image: Types.ObjectId[];  // Масив посилань на зображення
+    image: string[];  // Масив посилань на зображення
     describe: Describe;
     comments: Types.ObjectId[];
     collections?: CollectionsEnum | null;
@@ -35,8 +35,12 @@ const ProductSchema = new Schema<IProduct>({
     title: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     image: { 
-        type: [{ type: Schema.Types.ObjectId, ref: 'Image' }],
-        default: [] 
+        type: [String],
+        default: [],
+        validate: {
+            validator: (images: string[]) => images.every(url => /^https?:\/\/.+\.(jpg|jpeg|png)$/.test(url)),
+            message: 'Кожен елемент масиву image повинен бути валідним URL посиланням на зображення.'
+        }
     },
     describe: { type: DescribeSchema, required: true },
     comments: { 
