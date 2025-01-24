@@ -15,9 +15,10 @@ interface Describe {
 }
 
 export interface IProduct extends Document {
+    _id: Types.ObjectId;
     title: string;
     price: number;
-    image: string[];  // Масив посилань на зображення
+    image: string[];
     describe: Describe;
     comments: Types.ObjectId[];
     collections?: CollectionsEnum | null;

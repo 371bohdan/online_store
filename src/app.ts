@@ -46,9 +46,13 @@ app.use('/api/carts', cartRoute);
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
 
-// Oprations with product
+// Operations with product
 import productOptRoute from './routes/productOptRoute';
 app.use('/api/productopt', productOptRoute);
+
+// Operations with cart
+import cartOptRoute from './routes/cartCroute';
+app.use('/api/cart', cartOptRoute);
 
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));
