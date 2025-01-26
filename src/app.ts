@@ -37,6 +37,16 @@ import Product, { IProduct } from './models/products';
 const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['get', 'post', 'put', 'delete']);
 app.use('/api/products', productRoute);
 
+//devlivery general routes
+import Delivery, {IDelivery} from './models/deliveries';
+const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['get', 'post', 'put', 'delete']);
+app.use('/api/deliveries', deviveryRoute);
+
+//order general routes
+import Order, {IOrder} from './models/orders';
+const orderRoute: express.Router = genericCrudRoute(Order as Model<IOrder>, "orders", ['get', 'post', 'put', 'delete']);
+app.use('/api/orders', orderRoute);
+
 //carts general routes
 import Cart, { ICart } from './models/carts';
 const cartRoute: express.Router = genericCrudRoute(Cart as Model<ICart>, "carts", ['get', 'post', 'put', 'delete']);
@@ -53,6 +63,8 @@ app.use('/api/productopt', productOptRoute);
 // Operations with cart
 import cartOptRoute from './routes/cartCroute';
 app.use('/api/cart', cartOptRoute);
+
+
 
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));

@@ -5,6 +5,8 @@ import swaggerOptions from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
 import { productSwaggerSchema } from '../models/products';
 import { cartSwaggerSchema } from '../models/carts';
+import { deliverySwaggerSchema } from '../models/deliveries';
+import { orderSwaggerSchema } from '../models/orders';
 import { verifyAdminRole } from '../controllers/authController';
 
 
@@ -270,7 +272,11 @@ function getTheSwaggerSchema(modelName: String) {
         case 'products':
             return productSwaggerSchema;
         case 'carts':
-            return cartSwaggerSchema
+            return cartSwaggerSchema;
+        case 'deliveries':
+            return deliverySwaggerSchema;
+        case 'orders':
+            return orderSwaggerSchema;
         default:
             throw new Error(`Swagger schema not defined for model: ${modelName}`);
     }
