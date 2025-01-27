@@ -6,7 +6,7 @@ export interface IUser extends mongoose.Document {
     password: string,
     firstName: string,
     lastName: string,
-    avatar: Types.ObjectId;
+    avatar: String;
     recoveryId: string,
     role: string,
     isVerified: Boolean,
@@ -44,8 +44,8 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
     },
 
     avatar: {
-        type: Schema.Types.ObjectId,
-        ref: 'Image'  // Посилання на зображення
+        type: String,
+        required: false
     },
     recoveryId: {
         type: String,
