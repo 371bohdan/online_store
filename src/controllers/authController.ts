@@ -5,28 +5,54 @@ import mailController from "../mail/mailController";
 import { randomUUID } from "crypto";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from "mongoose";
+import { ENV } from "../dotenv/env";
 
 const authController = {
     signUp: async (req: Request, res: Response): Promise<void> => {
-        req.body.password = encryptPassword(req.body.password);
-        const isUserExist = await User.findOne({ email: req.body.email });
+        try {
+            //Custom password validation
+            const password: string = req.body.password;
+            const passwordRegex = /^(?=.*[A-Z])(?=.*\d).+$/;
+            if (password.length < 8) {
+                res.status(400).send('Password must be at least 8 characters long');
+            } else if (password.length > 20) {
+                res.status(400).send('Password cannot exceed 20 characters');
+            } else if (password.match(passwordRegex)) {
+                res.status(400).send('Invalid password format')
+            }
 
-        if (isUserExist) {
-            res.status(400).json("The email already used.")
-        } else {
-            const createdUser = await User.create(req.body);
-            mailController.sendMail(req.body.email, 'Registration on the Lumen online store',
-                'Your account has been successfully created. Have fun!');
-            res.json(createdUser);
+            const encryptedPassword = encryptPassword(password);
+            const verificationCode = randomUUID();
+            const createdUser = await User.create({
+                email: req.body.email,
+                password: encryptedPassword,
+                verificationCode
+            });
+
+            if (createdUser) {
+                mailController.sendMail(createdUser.email, 'Registration on the Lumen online store',
+                    `Your account has been successfully created, but you need to verify it. Follow the link: ${VERIFY_EMAIL_URI}/${verificationCode}`);
+                res.json('We\'ve sent a verification letter to your email');
+            }
+        } catch (error: any) {
+            res.status(400).send(error.message);
         }
     },
 
     signIn: async (req: Request, res: Response): Promise<void> => {
         const user: IUser | null = await User.findOne({ email: req.body.email });
         if (user) {
+
             if (bcrypt.compareSync(req.body.password, user.password)) {
-                const generatedToken = generateJwtToken(user.id);
-                res.send(generatedToken);
+
+                if (user.isVerified) {
+
+                    const generatedToken = generateJwtToken(user.id);
+                    res.send(generatedToken);
+                } else {
+                    res.status(400).send('You need to verify your email.');
+                }
+
             } else {
                 res.status(400).send('Incorrect incoming data (email or password).');
             }
@@ -54,6 +80,18 @@ const authController = {
         } else {
             res.status(404).json('User not found');
         }
+    },
+
+    verifyEmail: async (req: Request, res: Response): Promise<void> => {
+        const user = await User.findOneAndUpdate({ verificationCode: req.params.id }, { verificationCode: null, isVerified: true });
+
+        if (user) {
+            mailController.sendMail(user?.email, 'Lumen Online Store', 'Your account has been successfully verified. Have fun!');
+            res.json('Successfully verified.');
+
+        } else {
+            res.status(404).json('User not found');
+        }
     }
 }
 
@@ -67,7 +105,7 @@ function generateJwtToken(userId: ObjectId) {
         userId
     };
 
-    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    const jwtSecretKey = ENV.JWT_SECRET_KEY || '';
     return jwt.sign(data, jwtSecretKey);
 }
 
@@ -95,10 +133,11 @@ export const verifyAdminRole = async (req: Request, res: Response, next: NextFun
 }
 
 function getJwtPayload(token: string): JwtPayload | string {
-    const jwtSecretKey = process.env.JWT_SECRET_KEY || '';
+    const jwtSecretKey = ENV.JWT_SECRET_KEY || '';
     return jwt.verify(token, jwtSecretKey);
 }
 
-const RECOVER_ACCOUNT_URI: String = process.env.HOST_URI + '/api/auth/accountRecovery';
+const RECOVER_ACCOUNT_URI: String = ENV.HOST_URI + '/api/auth/accountRecovery';
+const VERIFY_EMAIL_URI: String = ENV.HOST_URI + '/api/auth/verifyEmail';
 
 export default authController;

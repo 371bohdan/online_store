@@ -1,17 +1,17 @@
 import express, { Request, Response } from 'express'
 import mongoose, { Model } from 'mongoose';
 import homeRoutes from './routes/home' // потім можна змінити на інший котрий потрібен маршрут
-import * as dotenv from 'dotenv'; //зберігання необхідних даних (необов'язково але на випадок якщо потрібно сховати конф дані) 
-dotenv.config();
 import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
+import { ENV } from './dotenv/env';
+import cors from 'cors';
 import cookieParser from "cookie-parser";
 
 
 //entry point
 const app = express();
-const port = process.env.PORT || 3000;
+const port = ENV.PORT;
 const run = () => {
     app.listen(port, () => {
         console.log(`This server runs on http://localhost:${port}`);
@@ -23,10 +23,13 @@ run();
 app.use(cookieParser());
 //inital home routes
 app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:5173'
+}));
 app.use('/', homeRoutes);
 
 //database connection
-mongoose.connect(process.env.MONGODB_URI || '');
+mongoose.connect(ENV.MONGODB_URI);
 
 //user routes
 
@@ -41,12 +44,12 @@ const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>
 app.use('/api/products', productRoute);
 
 //devlivery general routes
-import Delivery, {IDelivery} from './models/deliveries';
+import Delivery, { IDelivery } from './models/deliveries';
 const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['get', 'post', 'put', 'delete']);
 app.use('/api/deliveries', deviveryRoute);
 
 //order general routes
-import Order, {IOrder} from './models/orders';
+import Order, { IOrder } from './models/orders';
 const orderRoute: express.Router = genericCrudRoute(Order as Model<IOrder>, "orders", ['get', 'post', 'put', 'delete']);
 app.use('/api/orders', orderRoute);
 
