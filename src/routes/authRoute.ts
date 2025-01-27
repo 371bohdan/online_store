@@ -12,6 +12,9 @@ const router: express.Router = express.Router();
  *      summary: Registration with email and password
  *      requestBody:
  *          required: true
+ *          description: | 
+ *              <strong>Email:</strong> unique, 10-40 characters, and match to the general email format. <br>
+ *              <strong>Password:</strong> 8-20 characters, according to the password format (must contain at least 1 letter in the upper register and at least 1 number)
  *          content: 
  *              application/json:
  *                  schema:

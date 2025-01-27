@@ -16,22 +16,31 @@ export interface IUser extends mongoose.Document {
 const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
     email: {
         type: String,
-        required: true
+        required: [true, 'is required'],
+        unique: [true, 'already used'],
+        minlength: [10, 'must be at least 10 characters long'],
+        maxlength: [40, 'cannot exceed 40 characters'],
+        match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid format']
     },
 
     password: {
         type: String,
-        required: true
+        required: true,
+        maxlength: 61
     },
 
     firstName: {
         type: String,
-        required: false
+        required: false,
+        minlength: [3, 'must be at least 3 characters long'],
+        maxlength: [15, 'cannot exceed 15 characters'],
     },
 
     lastName: {
         type: String,
-        required: false
+        required: false,
+        minlength: [5, 'must be at least 5 characters long'],
+        maxlength: [20, 'cannot exceed 20 characters'],
     },
 
     avatar: {

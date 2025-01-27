@@ -9,18 +9,33 @@ import { ENV } from "../dotenv/env";
 
 const authController = {
     signUp: async (req: Request, res: Response): Promise<void> => {
-        req.body.password = encryptPassword(req.body.password);
-        const isUserExist = await User.findOne({ email: req.body.email });
+        try {
+            //Custom password validation
+            const password: string = req.body.password;
+            const passwordRegex = /^(?=.*[A-Z])(?=.*\d).+$/;
+            if (password.length < 8) {
+                res.status(400).send('Password must be at least 8 characters long');
+            } else if (password.length > 20) {
+                res.status(400).send('Password cannot exceed 20 characters');
+            } else if (password.match(passwordRegex)) {
+                res.status(400).send('Invalid password format')
+            }
 
-        if (isUserExist) {
-            res.status(400).json("The email already used.")
-        } else {
+            const encryptedPassword = encryptPassword(password);
             const verificationCode = randomUUID();
-            req.body.verificationCode = verificationCode;
-            const createdUser = await User.create(req.body);
-            mailController.sendMail(req.body.email, 'Registration on the Lumen online store',
-                `Your account has been successfully created, but you need to verify it. Follow the link: ${VERIFY_EMAIL_URI}/${verificationCode}`);
-            res.json(createdUser);
+            const createdUser = await User.create({
+                email: req.body.email,
+                password: encryptedPassword,
+                verificationCode
+            });
+
+            if (createdUser) {
+                mailController.sendMail(createdUser.email, 'Registration on the Lumen online store',
+                    `Your account has been successfully created, but you need to verify it. Follow the link: ${VERIFY_EMAIL_URI}/${verificationCode}`);
+                res.json('We\'ve sent a verification letter to your email');
+            }
+        } catch (error: any) {
+            res.status(400).send(error.message);
         }
     },
 
