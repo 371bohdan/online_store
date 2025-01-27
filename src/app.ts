@@ -5,6 +5,7 @@ import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
 import { ENV } from './dotenv/env';
+import cors from 'cors';
 
 //entry point
 const app = express();
@@ -18,6 +19,9 @@ run();
 
 //inital home routes
 app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:5173'
+}));
 app.use('/', homeRoutes);
 
 //database connection
