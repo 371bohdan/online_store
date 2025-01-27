@@ -6,6 +6,7 @@ dotenv.config();
 import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
+import cookieParser from "cookie-parser";
 
 
 //entry point
@@ -18,6 +19,8 @@ const run = () => {
 }
 run();
 
+//Для coockie
+app.use(cookieParser());
 //inital home routes
 app.use(express.json());
 app.use('/', homeRoutes);
@@ -64,6 +67,8 @@ app.use('/api/productopt', productOptRoute);
 import cartOptRoute from './routes/cartCroute';
 app.use('/api/cart', cartOptRoute);
 
+import orderOptRoute from './routes/orderRoute';
+app.use('/api/order', orderOptRoute)
 
 
 //swagger

@@ -110,8 +110,9 @@ router.get('/sort', productOptController.sortForPrice);
 //  *         description: Internal server error
 //  */
 
+export default router;
+
 // Завантаження зображення
 // router.post('/upload', upload.single('file'), productOptController.uploadImage);
 
 
-export default router;
