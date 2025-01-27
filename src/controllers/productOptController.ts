@@ -8,7 +8,7 @@ const productOptController = {
             const { title, sort } = req.query;
 
             if (!title || typeof title !== "string") {
-                res.status(400).json({ message: "Title query is required and must be a string" });
+                res.status(400).json({ message: "Search query is required and must be a string" });
                 return;
             }
 
@@ -23,8 +23,8 @@ const productOptController = {
                 });
             }
 
-
-            res.status(200).json(query);
+            const products = await query; // Виконання запиту
+            res.status(200).json(products);
         } catch (error) {
             console.error("Error searching for products by title:", error);
             res.status(500).json({ message: "Internal server error", error });
@@ -52,28 +52,32 @@ const productOptController = {
             res.status(500).json({ message: "Internal server error", error });
         }
     },
-    uploadImage: async (req: Request, res: Response): Promise<void> => {
-        try {
-            const file = req.file;
-            if (!file) {
-                res.status(400).json({ message: "No file uploaded" });
-                return;
-            }
 
-            const bucketName = "product-images"; // Назва бакету в Supabase
-            const publicUrl = await uploadToSupabase(file, bucketName);
-
-            if (!publicUrl) {
-                res.status(500).json({ message: "Failed to upload image" });
-                return;
-            }
-
-            res.status(201).json({ message: "Image uploaded successfully", url: publicUrl });
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            res.status(500).json({ message: "Internal server error", error });
-        }
-    },
 };
 
 export default productOptController;
+
+
+    // uploadImage: async (req: Request, res: Response): Promise<void> => {
+    //     try {
+    //         const file = req.file;
+    //         if (!file) {
+    //             res.status(400).json({ message: "No file uploaded" });
+    //             return;
+    //         }
+
+    //         const bucketName = "product-images"; // Назва бакету в Supabase
+    //         const publicUrl = await uploadToSupabase(file, bucketName);
+
+    //         if (!publicUrl) {
+    //             res.status(500).json({ message: "Failed to upload image" });
+    //             return;
+    //         }
+
+    //         res.status(201).json({ message: "Image uploaded successfully", url: publicUrl });
+    //     } catch (error) {
+    //         console.error("Error uploading image:", error);
+    //         res.status(500).json({ message: "Internal server error", error });
+    //     }
+    // },
+    // пізніше

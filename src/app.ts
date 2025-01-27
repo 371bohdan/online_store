@@ -6,6 +6,7 @@ dotenv.config();
 import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
+import cookieParser from "cookie-parser";
 
 
 //entry point
@@ -18,6 +19,8 @@ const run = () => {
 }
 run();
 
+//Для coockie
+app.use(cookieParser());
 //inital home routes
 app.use(express.json());
 app.use('/', homeRoutes);
@@ -37,20 +40,36 @@ import Product, { IProduct } from './models/products';
 const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['get', 'post', 'put', 'delete']);
 app.use('/api/products', productRoute);
 
+//devlivery general routes
+import Delivery, {IDelivery} from './models/deliveries';
+const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['get', 'post', 'put', 'delete']);
+app.use('/api/deliveries', deviveryRoute);
+
+//order general routes
+import Order, {IOrder} from './models/orders';
+const orderRoute: express.Router = genericCrudRoute(Order as Model<IOrder>, "orders", ['get', 'post', 'put', 'delete']);
+app.use('/api/orders', orderRoute);
+
+//carts general routes
+import Cart, { ICart } from './models/carts';
+const cartRoute: express.Router = genericCrudRoute(Cart as Model<ICart>, "carts", ['get', 'post', 'put', 'delete']);
+app.use('/api/carts', cartRoute);
 
 //auth routes
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
 
-// Oprations with product
+// Operations with product
 import productOptRoute from './routes/productOptRoute';
 app.use('/api/productopt', productOptRoute);
 
-import imageRoute from './routes/imageRoute';
-app.use('/api/image', imageRoute);
+// Operations with cart
+import cartOptRoute from './routes/cartCroute';
+app.use('/api/cart', cartOptRoute);
+
+import orderOptRoute from './routes/orderRoute';
+app.use('/api/order', orderOptRoute)
+
 
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));
-
-
-
