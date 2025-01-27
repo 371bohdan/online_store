@@ -11,6 +11,7 @@ import { verifyAdminRole } from '../controllers/authController';
 
 
 
+
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string, methodsToSecure: Array<String>): express.Router => {
     const router: express.Router = express.Router();
     const controller = genericCrudController(Model);
