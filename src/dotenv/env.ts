@@ -43,6 +43,8 @@ const envSchema = zod.object({
         'Invalid jwt secret key'
     ),
 
+    OWNER_EMAIL: zod.string().email('Invalid email format')
+
 });
 
 type Env = zod.infer<typeof envSchema>;

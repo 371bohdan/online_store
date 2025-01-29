@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import mongoose, { Model } from 'mongoose';
 import homeRoutes from './routes/home' // потім можна змінити на інший котрий потрібен маршрут
 import genericCrudRoute from './routes/genericCrudRoute';
@@ -32,11 +32,13 @@ app.use('/', homeRoutes);
 mongoose.connect(ENV.MONGODB_URI);
 
 //user routes
-
-//user routes
 import User, { IUser } from './models/users';
 const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']);
 app.use('/api/users', userRoute);
+
+//initialise owner
+import { initialiseOwnerAccount } from './controllers/authController';
+initialiseOwnerAccount();
 
 //product general routes
 import Product, { IProduct } from './models/products';
