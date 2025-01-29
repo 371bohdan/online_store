@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import mongooseToSwagger from 'mongoose-to-swagger';
+import { UserRoles } from "./enums/userRolesEnum";
 
 export interface IUser extends mongoose.Document {
     email: string,
@@ -7,7 +8,7 @@ export interface IUser extends mongoose.Document {
     firstName: string,
     lastName: string,
     avatar: String;
-    recoveryId: string,
+    recoveryCode: string,
     role: string,
     isVerified: Boolean,
     verificationCode: string
@@ -47,7 +48,7 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         type: String,
         required: false
     },
-    recoveryId: {
+    recoveryCode: {
         type: String,
         required: false,
         default: undefined
@@ -55,8 +56,8 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
 
     role: {
         type: String,
-        enum: ['USER', 'ADMIN'],
-        default: 'USER'
+        enum: UserRoles,
+        default: 'user'
     },
 
     isVerified: {

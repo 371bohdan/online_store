@@ -25,6 +25,7 @@ const router: express.Router = express.Router();
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
+ *                              example: String123
  *                      required:
  *                          - email
  *                          - password
@@ -126,7 +127,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
  *          500:
  *              description: Internal server error
  */
-router.post('/verify/:id', authController.verifyAndChangePassword);
+router.post('/verify/:id', authController.confirmAccountRecovery);
 
 /**
  * @swagger
