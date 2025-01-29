@@ -4,14 +4,14 @@ import upload from "../supabase/uploadMiddleweare";
 
 const router: express.Router = express.Router();
 
-// GET /api/productopt/title?title=example
+// GET /api/productopt/title
 
 /**
  * @swagger
- * /api/productopt/title:
+ * /api/products/title:
  *   get:
  *     tags:
- *       - Products API
+ *       - products API
  *     summary: Search for products by title
  *     parameters:
  *       - in: query
@@ -59,10 +59,10 @@ router.get('/title', productOptController.searchForName);
 
 /**
  * @swagger
- * /api/productopt/sort:
+ * /api/products/sort:
  *   get:
  *     tags:
- *       - Products API
+ *       - products API
  *     summary: Sort products by price
  *     parameters:
  *       - in: query
@@ -114,5 +114,3 @@ export default router;
 
 // Завантаження зображення
 // router.post('/upload', upload.single('file'), productOptController.uploadImage);
-
-

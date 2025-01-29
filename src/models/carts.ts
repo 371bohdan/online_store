@@ -11,7 +11,6 @@ interface CartProduct {
 // Інтерфейс для моделі Cart
 export interface ICart extends Document {
     userId: Types.ObjectId;
-    sessionId: String;
     totalPrice: number;
     products: CartProduct[];
 }
@@ -20,7 +19,6 @@ export interface ICart extends Document {
 const CartSchema = new Schema<ICart>(
     {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: false },
-        sessionId: { type: String, required: false },
         totalPrice: {
             type: Number,
             default: 0,

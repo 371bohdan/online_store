@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import Cart from "../models/carts";
-import { v4 as uuidv4 } from 'uuid';
 import { Types } from 'mongoose';
 
 const cartController = {
@@ -10,24 +9,17 @@ const cartController = {
 
       const userId = req.body.userId || null;
 
-      let sessionId = req.cookies.sessionId;
-
-      if(!sessionId && !userId){
-        sessionId = uuidv4();
-      }
-
-
       if (!productId || !quantity) {
         res.status(400).json({ message: "ProductId, and quantity are required" });
         return;
       }
 
       // Знайти кошик користувача
-      let cart = await Cart.findOne({ $or: [{userId}, {sessionId}] });
+      let cart = await Cart.findOne({ userId } );
 
       if (!cart) {
         // Якщо кошик не існує, створити новий
-        cart = new Cart({ userId, sessionId, products: [{ productId, quantity }] });
+        cart = new Cart({ userId, products: [{ productId, quantity }] });
       } else {
         // Перевірити, чи товар вже є в кошику
         const productIndex = cart.products.findIndex(
@@ -53,10 +45,10 @@ const cartController = {
   },
   removeProduct: async (req: Request, res: Response): Promise<void> =>{
         try{
-            const {userId, sessionId, productId, quantity} = req.body;
+            const {userId, productId, quantity} = req.body;
 
-          if (!userId && !sessionId) {
-            res.status(400).json({ message: "Either userId or sessionId is required" });
+          if (!userId) {
+            res.status(400).json({ message: "userId is required" });
             return;
           }
           if (!productId) {
@@ -72,8 +64,7 @@ const cartController = {
           const removeQuantity = quantity || 1;
 
         
-          const query = userId ? { userId } : { sessionId };
-          const cart = await Cart.findOne(query);
+          const cart = await Cart.findOne({ userId }); 
 
           if (!cart || !cart.products || cart.products.length === 0) {
             res.status(400).json({ message: "The cart is empty!" });

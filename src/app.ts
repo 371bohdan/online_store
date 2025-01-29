@@ -28,7 +28,17 @@ app.use('/', homeRoutes);
 //database connection
 mongoose.connect(process.env.MONGODB_URI || '');
 
-//user routes
+// Operations with product
+import productOptRoute from './routes/productRoute';
+app.use('/api/products', productOptRoute);
+
+// Operations with cart
+import cartOptRoute from './routes/cartRoute';
+app.use('/api/carts', cartOptRoute);
+
+//Operations with order
+import orderOptRoute from './routes/orderRoute';
+app.use('/api/orders', orderOptRoute)
 
 //user routes
 import User, { IUser } from './models/users';
@@ -37,7 +47,7 @@ app.use('/api/users', userRoute);
 
 //product general routes
 import Product, { IProduct } from './models/products';
-const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['get', 'post', 'put', 'delete']);
+const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>, "products", ['post', 'put', 'delete']);
 app.use('/api/products', productRoute);
 
 //devlivery general routes
@@ -59,16 +69,9 @@ app.use('/api/carts', cartRoute);
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
 
-// Operations with product
-import productOptRoute from './routes/productOptRoute';
-app.use('/api/productopt', productOptRoute);
 
-// Operations with cart
-import cartOptRoute from './routes/cartCroute';
-app.use('/api/cart', cartOptRoute);
 
-import orderOptRoute from './routes/orderRoute';
-app.use('/api/order', orderOptRoute)
+
 
 
 //swagger

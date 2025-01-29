@@ -5,10 +5,10 @@ const router: express.Router = express.Router();
 
 /**
  * @swagger
- * /api/cart/add:
+ * /api/carts/add:
  *   post:
  *     tags:
- *       - Cart API
+ *       - carts API
  *     summary: Add a product to the cart
  *     description: Adds a product to the user's cart. The cart is identified either by `userId` (for authenticated users) or `sessionId` (for guest users).
  *     requestBody:
@@ -21,9 +21,6 @@ const router: express.Router = express.Router();
  *               userId:
  *                 type: string
  *                 description: (Optional) The user ID associated with the cart (for authenticated users)
- *               sessionId:
- *                 type: string
- *                 description: (Optional) The session ID associated with the cart (for guest users)
  *               productId:
  *                 type: string
  *                 description: The ID of the product to add
@@ -59,10 +56,10 @@ router.post('/add', cartController.addProduct);
 
 /**
  * @swagger
- * /api/cart/remove:
+ * /api/carts/remove:
  *   post:
  *     tags:
- *       - Cart API
+ *       - carts API
  *     summary: Remove a product from the cart or update its quantity
  *     requestBody:
  *       required: true
@@ -74,9 +71,6 @@ router.post('/add', cartController.addProduct);
  *               userId:
  *                 type: string
  *                 description: (Optional) The user ID associated with the cart (for authenticated users)
- *               sessionId:
- *                 type: string
- *                 description: (Optional) The session ID associated with the cart (for guest users)
  *               productId:
  *                 type: string
  *                 description: The ID of the product to remove
@@ -85,9 +79,7 @@ router.post('/add', cartController.addProduct);
  *                 description: The quantity of the product to remove. Defaults to 1 if not provided.
  *             required:
  *               - productId
- *             oneOf:
- *               - required: [userId]
- *               - required: [sessionId]
+ *               - userId
  *     responses:
  *       200:
  *         description: Successfully removed product from the cart
