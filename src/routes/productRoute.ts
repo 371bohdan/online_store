@@ -1,5 +1,5 @@
 import express from "express";
-import productOptController from "../controllers/productOptController";
+import productOptController from "../controllers/productController";
 import upload from "../supabase/uploadMiddleweare";
 
 const router: express.Router = express.Router();
