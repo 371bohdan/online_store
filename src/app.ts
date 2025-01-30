@@ -1,17 +1,17 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import mongoose, { Model } from 'mongoose';
 import homeRoutes from './routes/home' // потім можна змінити на інший котрий потрібен маршрут
-import * as dotenv from 'dotenv'; //зберігання необхідних даних (необов'язково але на випадок якщо потрібно сховати конф дані) 
-dotenv.config();
 import genericCrudRoute from './routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import swaggerOptions from './swagger/swaggerOptions';
+import { ENV } from './dotenv/env';
+import cors from 'cors';
 import cookieParser from "cookie-parser";
 
 
 //entry point
 const app = express();
-const port = process.env.PORT || 3000;
+const port = ENV.PORT;
 const run = () => {
     app.listen(port, () => {
         console.log(`This server runs on http://localhost:${port}`);
@@ -23,10 +23,13 @@ run();
 app.use(cookieParser());
 //inital home routes
 app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:5173'
+}));
 app.use('/', homeRoutes);
 
 //database connection
-mongoose.connect(process.env.MONGODB_URI || '');
+mongoose.connect(ENV.MONGODB_URI);
 
 // Operations with product
 import productOptRoute from './routes/productRoute';
@@ -42,8 +45,13 @@ app.use('/api/orders', orderOptRoute)
 
 //user routes
 import User, { IUser } from './models/users';
-const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']);
+const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", []);
 app.use('/api/users', userRoute);
+
+
+//initialise owner
+import { initialiseOwnerAccount } from './controllers/authController';
+initialiseOwnerAccount();
 
 //product general routes
 import Product, { IProduct } from './models/products';
@@ -68,10 +76,6 @@ app.use('/api/carts', cartRoute);
 //auth routes
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
-
-
-
-
 
 
 //swagger

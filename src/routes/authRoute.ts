@@ -12,6 +12,9 @@ const router: express.Router = express.Router();
  *      summary: Registration with email and password
  *      requestBody:
  *          required: true
+ *          description: | 
+ *              <strong>Email:</strong> unique, 10-40 characters, and match to the general email format. <br>
+ *              <strong>Password:</strong> 8-20 characters, according to the password format (must contain at least 1 letter in the upper register and at least 1 number)
  *          content: 
  *              application/json:
  *                  schema:
@@ -22,6 +25,7 @@ const router: express.Router = express.Router();
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
+ *                              example: String123
  *                      required:
  *                          - email
  *                          - password
@@ -64,29 +68,29 @@ router.post('/signUp', authController.signUp);
  */
 router.post('/accountRecovery', authController.accountRecovery);
 
-// /**
-//  * @swagger
-//  * /api/auth/verifyEmail/{id}:
-//  *  get:
-//  *      tags:
-//  *          - Auth API
-//  *      summary: User email confirmation
-//  *      parameters:
-//  *          - in: path
-//  *            name: id
-//  *            required: true
-//  *            schema:
-//  *              type: string
-//  *            description: Type a verification code in the line below
-//  *      responses:
-//  *          200:
-//  *              description: Success
-//  *          404:
-//  *              description: User not found
-//  *          500:
-//  *              description: Internal server error
-//  */
-// router.get('/verifyEmail/:id', authController.verifyEmail);
+/**
+ * @swagger
+ * /api/auth/verifyEmail/{id}:
+ *  get:
+ *      tags:
+ *          - Auth API
+ *      summary: User email confirmation
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Type a verification code in the line below
+ *      responses:
+ *          200:
+ *              description: Success
+ *          404:
+ *              description: User not found
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/verifyEmail/:id', authController.verifyEmail);
 
 /**
  * @swagger
@@ -123,7 +127,7 @@ router.post('/accountRecovery', authController.accountRecovery);
  *          500:
  *              description: Internal server error
  */
-router.post('/verify/:id', authController.verifyAndChangePassword);
+router.post('/verify/:id', authController.confirmAccountRecovery);
 
 /**
  * @swagger
