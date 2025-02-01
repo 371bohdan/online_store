@@ -266,9 +266,7 @@ function swagger(modelName: String, methodsToSecure: Array<String>): void {
 function getTheSwaggerSchema(modelName: String) {
     switch (modelName) {
         case 'users':
-            if (userSwaggerSchema.properties && userSwaggerSchema.properties.recoveryId) {
-                delete userSwaggerSchema.properties.recoveryId;
-            }
+            delete userSwaggerSchema.properties.recoveryId;
             return userSwaggerSchema;
         case 'products':
             return productSwaggerSchema;

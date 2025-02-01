@@ -1,6 +1,37 @@
 import { Request, Response } from "express";
 import Product from "../models/products";
-import uploadToSupabase from "../supabase/supabaseUtils";
+import supabase from "../supabase/supabaseService";
+
+import { ENV } from '../dotenv/env';
+
+
+
+const uploadAndGetUrl = async (req: Request, res: Response): Promise<string | null> => {
+    if (!req.file) {
+        res.status(400).json({ error: 'File is missing' });
+        return null;
+    }
+
+    const fileName = `${Date.now()}_${req.file.originalname}`;
+
+    const { data, error } = await supabase
+        .storage
+        .from(ENV.SUPABASE_BUCKET_NAME)
+        .upload(fileName, req.file.buffer, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+    if (error) {
+        console.error('Error upon upload to Supabase:', error);
+        res.status(500).json({ error: 'Error upload file' });
+        return null;
+    }
+
+    const { data: publicUrlData } = supabase.storage.from(ENV.SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
+
+    return publicUrlData.publicUrl;
+};
 
 const productOptController = {
     searchForName: async (req: Request, res: Response): Promise<void> => {
@@ -12,7 +43,7 @@ const productOptController = {
                 return;
             }
 
-            // Пошук за назвою та сортуванням, якщо параметр сортування є
+            
             let query = Product.find({
                 title: new RegExp(`^${title}`, "i"), // ^ - початок рядка
             });
@@ -23,7 +54,7 @@ const productOptController = {
                 });
             }
 
-            const products = await query; // Виконання запиту
+            const products = await query;
             res.status(200).json(products);
         } catch (error) {
             console.error("Error searching for products by title:", error);
@@ -41,7 +72,7 @@ const productOptController = {
                 return;
             }
 
-            // Сортування продуктів за полем price
+            
             const products = await Product.find().sort({
                 price: sort === "asc" ? 1 : -1, // 1 - за зростанням, -1 - за спаданням
             });
@@ -51,33 +82,46 @@ const productOptController = {
             console.error("Error sorting products by price:", error);
             res.status(500).json({ message: "Internal server error", error });
         }
-    },
+    },createProduct: async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { title, price, describe, collections, stock } = req.body;
+    
+            if (!req.file) {
+                res.status(400).json({ message: 'Файл для завантаження відсутній' });
+                return;
+            }
+    
+            const imageUrl = await uploadAndGetUrl(req, res);
+            if (!imageUrl) return;
+    
 
+            let parsedDescribe = describe;
+            if (typeof describe === 'string') {
+                try {
+                    parsedDescribe = JSON.parse(describe); 
+                } catch (e) {
+                    res.status(400).json({ message: 'Невірний формат опису продукту' });
+                    return;
+                }
+            }
+    
+            const data = new Product({
+                title,
+                price,
+                describe: parsedDescribe, 
+                collections,
+                stock,
+                image: imageUrl
+            });
+    
+            const newProduct = await Product.create(data);
+            res.status(201).json(newProduct);
+    
+        } catch (e) {
+            console.error('Помилка при збереженні продукту в базі:', e);
+            res.status(500).json({ message: 'Internal server error', error: e });
+        }
+    }
 };
 
 export default productOptController;
-
-
-    // uploadImage: async (req: Request, res: Response): Promise<void> => {
-    //     try {
-    //         const file = req.file;
-    //         if (!file) {
-    //             res.status(400).json({ message: "No file uploaded" });
-    //             return;
-    //         }
-
-    //         const bucketName = "product-images"; // Назва бакету в Supabase
-    //         const publicUrl = await uploadToSupabase(file, bucketName);
-
-    //         if (!publicUrl) {
-    //             res.status(500).json({ message: "Failed to upload image" });
-    //             return;
-    //         }
-
-    //         res.status(201).json({ message: "Image uploaded successfully", url: publicUrl });
-    //     } catch (error) {
-    //         console.error("Error uploading image:", error);
-    //         res.status(500).json({ message: "Internal server error", error });
-    //     }
-    // },
-    // пізніше

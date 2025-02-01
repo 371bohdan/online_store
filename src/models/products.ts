@@ -38,10 +38,10 @@ const ProductSchema = new Schema<IProduct>({
     image: { 
         type: [String],
         default: [],
-        validate: {
-            validator: (images: string[]) => images.every(url => /^https?:\/\/.+\.(jpg|jpeg|png)$/.test(url)),
-            message: 'Кожен елемент масиву image повинен бути валідним URL посиланням на зображення.'
-        }
+        // validate: {
+        //     validator: (images: string[]) => images.every(url => /^https?:\/\/.+\.(jpg|jpeg|png)$/.test(url)),
+        //     message: 'Кожен елемент масиву image повинен бути валідним URL посиланням на зображення.'
+        // }
     },
     describe: { type: DescribeSchema, required: false },
     comments: { 

@@ -25,7 +25,7 @@ const envSchema = zod.object({
         'Invalid mail password'
     ),
 
-    // SUPABASE_BUCKET_NAME: zod.string(),
+    SUPABASE_BUCKET_NAME: zod.string(),
     SUPABASE_KEY: zod.string(),
 
     SUPABASE_URL: zod.string().refine(

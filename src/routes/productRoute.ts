@@ -1,5 +1,5 @@
 import express from "express";
-import productOptController from "../controllers/productController";
+import productController from "../controllers/productController";
 import upload from "../supabase/uploadMiddleweare";
 
 const router: express.Router = express.Router();
@@ -50,7 +50,7 @@ const router: express.Router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/title', productOptController.searchForName);
+router.get('/title', productController.searchForName);
 
 
 
@@ -82,35 +82,114 @@ router.get('/title', productOptController.searchForName);
  */
 
 
-router.get('/sort', productOptController.sortForPrice);
+router.get('/sort', productController.sortForPrice);
 
 
 
-// /**
-//  * @swagger
-//  * /api/productopt/upload:
-//  *   get:
-//  *     tags:
-//  *       - Products API
-//  *     summary: completed download to Supabase bucket
-//  *     parameters:
-//  *       - in: query
-//  *         name: sort
-//  *         schema:
-//  *           type: string
-//  *           enum: [asc, desc]
-//  *         required: true
-//  *         description: Sort order for price (asc or desc)
-//  *     responses:
-//  *       200:
-//  *         description: Success
-//  *       400:
-//  *         description: The query parameter is missing or invalid
-//  *       500:
-//  *         description: Internal server error
-//  */
+
+/**
+ * @swagger
+ * /api/products/create:
+ *   post:
+ *     tags:
+ *       - products API
+ *     summary: Create a new product
+ *     consumes:
+ *       - multipart/form-data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Ароматична свічка Лаванда"
+ *               price:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 249.99
+ *               describe:
+ *                 type: object
+ *                 properties:
+ *                   aroma:
+ *                     type: string
+ *                     example: "Лаванда"
+ *                   burning_time:
+ *                     type: string
+ *                     example: "40 годин"
+ *                   short_describe:
+ *                     type: string
+ *                     example: "Ароматична свічка з натурального воску"
+ *               collections:
+ *                 type: string
+ *                 enum: [summer, spring, autumn, winter]
+ *                 example: "spring"
+ *               stock:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 50
+ *               file:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Масив файлів-зображень продукту
+ *     responses:
+ *       201:
+ *         description: Продукт успішно створений
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   example: "65a123abc456def789"
+ *                 title:
+ *                   type: string
+ *                   example: "Ароматична свічка Лаванда"
+ *                 price:
+ *                   type: number
+ *                   example: 249.99
+ *                 image:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     example: "https://xyz.supabase.co/storage/v1/object/public/products/1706789123456_image.jpg"
+ *                 describe:
+ *                   type: object
+ *                   properties:
+ *                     aroma:
+ *                       type: string
+ *                       example: "Лаванда"
+ *                     burning_time:
+ *                       type: string
+ *                       example: "40 годин"
+ *                     short_describe:
+ *                       type: string
+ *                       example: "Ароматична свічка з натурального воску"
+ *                 collections:
+ *                   type: string
+ *                   enum: [summer, spring, autumn, winter]
+ *                   example: "spring"
+ *                 stock:
+ *                   type: number
+ *                   example: 50
+ *       400:
+ *         description: Некоректний запит або відсутній файл
+ *       500:
+ *         description: Внутрішня помилка сервера
+ */
+
+
+router.post('/create', upload.single('file'), productController.createProduct);
+
 
 export default router;
+
+
 
 // Завантаження зображення
 // router.post('/upload', upload.single('file'), productOptController.uploadImage);
