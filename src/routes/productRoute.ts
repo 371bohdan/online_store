@@ -1,10 +1,13 @@
 import express from "express";
 import productController from "../controllers/productController";
 import upload from "../supabase/uploadMiddleweare";
+import { Model } from 'mongoose';
+import Product, { IProduct } from '../models/products';
+import genericCrudRoute from './genericCrudRoute';
 
 const router: express.Router = express.Router();
 
-// GET /api/productopt/title
+// GET /api/products/title
 
 /**
  * @swagger
@@ -54,8 +57,8 @@ router.get('/title', productController.searchForName);
 
 
 
-// GET /api/productopt/sort?sort=asc
-// GET /api/productopt/sort?sort=desc
+// GET /api/products/sort?sort=asc
+// GET /api/products/sort?sort=desc
 
 /**
  * @swagger
@@ -89,7 +92,7 @@ router.get('/sort', productController.sortForPrice);
 
 /**
  * @swagger
- * /api/products/create:
+ * /api/products:
  *   post:
  *     tags:
  *       - products API
@@ -183,13 +186,10 @@ router.get('/sort', productController.sortForPrice);
  *         description: Внутрішня помилка сервера
  */
 
+router.post('/', upload.single('file'), productController.createProduct);
 
-router.post('/create', upload.single('file'), productController.createProduct);
-
+router.use('/api/products', router);
 
 export default router;
 
 
-
-// Завантаження зображення
-// router.post('/upload', upload.single('file'), productOptController.uploadImage);
