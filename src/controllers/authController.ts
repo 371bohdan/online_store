@@ -70,7 +70,7 @@ const authController = {
 
         if (isPasswordValid(password, res)) {
             const encryptedPassword = encryptPassword(password);
-            const updatedUser = await User.findOneAndUpdate({ recoveryId: req.params.id },
+            const updatedUser = await User.findOneAndUpdate({ recoveryCode: req.params.id },
                 { password: encryptedPassword, recoveryCode: null, verificationCode: null, isVerified: true });
 
             if (updatedUser) {

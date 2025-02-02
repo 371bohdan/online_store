@@ -8,9 +8,9 @@ import { cartSwaggerSchema } from '../models/carts';
 import { deliverySwaggerSchema } from '../models/deliveries';
 import { orderSwaggerSchema } from '../models/orders';
 import { verifyAdminRole } from '../controllers/authController';
-
-
-
+import errorHandler from '../middleware/errors/errorHandler';
+import asyncHandler from '../middleware/errors/asyncHandler';
+import mongooseToSwagger from 'mongoose-to-swagger'
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string, methodsToSecure: Array<String>): express.Router => {
     const router: express.Router = express.Router();
@@ -22,33 +22,35 @@ const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string
     //routes
     if (methodsToSecure.includes('get')) {
         router.get('/', verifyAdminRole, controller.getAll);
-        router.get('/:id', verifyAdminRole, controller.getById);
+        router.get('/:id', verifyAdminRole, asyncHandler(controller.getById));
     } else {
         router.get('/', controller.getAll);
-        router.get('/:id', controller.getById);
+        router.get('/:id', asyncHandler(controller.getById));
     }
 
     if (methodsToSecure.includes('post')) {
-        router.post('/', verifyAdminRole, controller.create);
+        router.post('/', verifyAdminRole, asyncHandler(controller.create));
     } else {
-        router.post('/', controller.create);
+        router.post('/', asyncHandler(controller.create));
     }
 
 
     if (methodsToSecure.includes('post')) {
-        router.put('/:id', verifyAdminRole, controller.update);
+        router.put('/:id', verifyAdminRole, asyncHandler(controller.update));
     } else {
-        router.put('/:id', controller.update);
+        router.put('/:id', asyncHandler(controller.update));
     }
 
     if (methodsToSecure.includes('post')) {
         router.delete('/', verifyAdminRole, controller.removeAll);
-        router.delete('/:id', verifyAdminRole, controller.removeById);
+        router.delete('/:id', verifyAdminRole, asyncHandler(controller.removeById));
     } else {
         router.delete('/', controller.removeAll);
-        router.delete('/:id', controller.removeById);
+        router.delete('/:id', asyncHandler(controller.removeById));
     }
 
+    //global error handler
+    router.use(errorHandler)
     return router;
 }
 
@@ -263,12 +265,12 @@ function swagger(modelName: String, methodsToSecure: Array<String>): void {
     }
 }
 
-function getTheSwaggerSchema(modelName: String) {
+export function getTheSwaggerSchema(modelName: String) {
     switch (modelName) {
         case 'users':
-            if (userSwaggerSchema.properties && userSwaggerSchema.properties.recoveryId) {
-                delete userSwaggerSchema.properties.recoveryId;
-            }
+            delete userSwaggerSchema.properties.recoveryCode;
+            delete userSwaggerSchema.properties.role;
+            delete userSwaggerSchema.properties.verificationCode;
             return userSwaggerSchema;
         case 'products':
             return productSwaggerSchema;

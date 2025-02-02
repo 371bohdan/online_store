@@ -94,7 +94,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
 
 /**
  * @swagger
- * /api/auth/verify/{id}:
+ * /api/auth/confirm/{id}:
  *  post:
  *      tags:
  *          - Auth API
@@ -115,6 +115,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
  *                      properties:
  *                          password:
  *                              type: string
+ *                              example: String123
  *                  required:
  *                      - password
  *      responses:
@@ -127,7 +128,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
  *          500:
  *              description: Internal server error
  */
-router.post('/verify/:id', authController.confirmAccountRecovery);
+router.post('/confirm/:id', authController.confirmAccountRecovery);
 
 /**
  * @swagger
@@ -148,6 +149,7 @@ router.post('/verify/:id', authController.confirmAccountRecovery);
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
+ *                              example: String123
  *                  required:
  *                      - email
  *                      - password

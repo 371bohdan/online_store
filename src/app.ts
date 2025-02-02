@@ -21,6 +21,7 @@ run();
 
 //Для coockie
 app.use(cookieParser());
+
 //inital home routes
 app.use(express.json());
 app.use(cors({
@@ -74,7 +75,6 @@ app.use('/api/cart', cartOptRoute);
 
 import orderOptRoute from './routes/orderRoute';
 app.use('/api/order', orderOptRoute)
-
 
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions));
