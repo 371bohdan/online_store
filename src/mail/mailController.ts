@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { ENV } from '../dotenv/env';
 
 const mailController = {
     sendMail: (to: String, subject: String, message: String): void => {
@@ -12,15 +13,15 @@ function getTransporter(): nodemailer.Transporter {
     return nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASSWORD
+            user: ENV.MAIL_USER,
+            pass: ENV.MAIL_PASSWORD
         }
     });
 }
 
 function getMailOptions(to: String, subject: String, message: String): Object {
     return {
-        from: process.env.MAIL_USER,
+        from: ENV.MAIL_USER,
         to,
         subject,
         text: message

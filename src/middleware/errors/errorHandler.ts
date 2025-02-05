@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiError, ErrorResponse, NotFoundError } from "../../errors/ApiError";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
+import { TokenExpiredError } from "jsonwebtoken";
 
 const errorHandler = (err: ApiError, req: Request, res: Response, next: NextFunction) => {
     const message = err.message || 'Internal server error';
@@ -20,6 +21,12 @@ const errorHandler = (err: ApiError, req: Request, res: Response, next: NextFunc
 
     if (err instanceof NotFoundError) {
         res.status(statusCode).json(getErrorResponse(statusCode, message));
+        return;
+    }
+
+    if (err instanceof TokenExpiredError) {
+        const statusCode = StatusCodes.UNAUTHORIZED;
+        res.status(statusCode).json(getErrorResponse(statusCode, err.message));
         return;
     }
 

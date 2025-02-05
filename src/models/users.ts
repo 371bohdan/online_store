@@ -11,7 +11,8 @@ export interface IUser extends mongoose.Document {
     recoveryCode: string,
     role: string,
     isVerified: Boolean,
-    verificationCode: string
+    verificationCode: string,
+    refreshToken: string
 }
 
 const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
@@ -69,6 +70,10 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         type: String,
         required: true
     },
+
+    refreshToken: {
+        type: String
+    }
 })
 
 const User: mongoose.Model<IUser> = mongoose.model<IUser>('User', userSchema);

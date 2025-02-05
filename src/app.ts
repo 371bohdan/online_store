@@ -21,6 +21,7 @@ run();
 
 //Для coockie
 app.use(cookieParser());
+
 //inital home routes
 app.use(express.json());
 app.use(cors({
@@ -29,15 +30,11 @@ app.use(cors({
 app.use('/', homeRoutes);
 
 //database connection
-mongoose.connect(ENV.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI || '');
 
-// Operations with cart
-import cartOptRoute from './routes/cartRoute';
-app.use('/api/carts', cartOptRoute);
-
-//Operations with order
-import orderOptRoute from './routes/orderRoute';
-app.use('/api/orders', orderOptRoute)
+// Operations with product
+import productOptRoute from './routes/productRoute';
+app.use('/api/productopt', productOptRoute);
 
 //user routes
 import User, { IUser } from './models/users';
@@ -54,12 +51,12 @@ const productRoute: express.Router = genericCrudRoute(Product as Model<IProduct>
 app.use('/api/products', productRoute);
 
 //devlivery general routes
-import Delivery, {IDelivery} from './models/deliveries';
+import Delivery, { IDelivery } from './models/deliveries';
 const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['get', 'post', 'put', 'delete']);
 app.use('/api/deliveries', deviveryRoute);
 
 //order general routes
-import Order, {IOrder} from './models/orders';
+import Order, { IOrder } from './models/orders';
 const orderRoute: express.Router = genericCrudRoute(Order as Model<IOrder>, "orders", ['get', 'post', 'put', 'delete']);
 app.use('/api/orders', orderRoute);
 
@@ -71,6 +68,15 @@ app.use('/api/carts', cartRoute);
 //auth routes
 import authRoute from './routes/authRoute';
 app.use('/api/auth', authRoute);
+
+
+
+// Operations with cart
+import cartOptRoute from './routes/cartRoute';
+app.use('/api/cart', cartOptRoute);
+
+import orderOptRoute from './routes/orderRoute';
+app.use('/api/order', orderOptRoute)
 
 
 //swagger
