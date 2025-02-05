@@ -67,7 +67,7 @@ const authController = {
 
     confirmAccountRecovery: async (req: Request, res: Response): Promise<void> => {
         const password = req.body.password;
- 
+
         if (isPasswordValid(password, res)) {
             const encryptedPassword = encryptPassword(password);
             const updatedUser = await User.findOneAndUpdate({ recoveryCode: req.params.id },
