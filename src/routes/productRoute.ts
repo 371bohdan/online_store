@@ -188,9 +188,6 @@ router.get('/sort', productController.sortForPrice);
 
 router.post('/', upload.single('file'), productController.createProduct);
 
-// router.use(genericCrudRoute(Product as Model<IProduct>, "products", []));
-
-
 export default router;
 
 
