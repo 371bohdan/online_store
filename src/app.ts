@@ -34,7 +34,7 @@ mongoose.connect(process.env.MONGODB_URI || '');
 
 // Operations with product
 import productOptRoute from './routes/productRoute';
-app.use('/api/productopt', productOptRoute);
+app.use('/api/products', productOptRoute);
 
 //user routes
 import User, { IUser } from './models/users';
