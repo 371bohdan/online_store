@@ -94,7 +94,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
 
 /**
  * @swagger
- * /api/auth/verify/{id}:
+ * /api/auth/confirm/{id}:
  *  post:
  *      tags:
  *          - Auth API
@@ -115,6 +115,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
  *                      properties:
  *                          password:
  *                              type: string
+ *                              example: String123
  *                  required:
  *                      - password
  *      responses:
@@ -127,7 +128,7 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
  *          500:
  *              description: Internal server error
  */
-router.post('/verify/:id', authController.confirmAccountRecovery);
+router.post('/confirm/:id', authController.confirmAccountRecovery);
 
 /**
  * @swagger
@@ -148,6 +149,7 @@ router.post('/verify/:id', authController.confirmAccountRecovery);
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
+ *                              example: String123
  *                  required:
  *                      - email
  *                      - password
@@ -160,5 +162,43 @@ router.post('/verify/:id', authController.confirmAccountRecovery);
  *              description: Internal server error
  */
 router.post('/signIn', authController.signIn);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *  post:
+ *      tags:
+ *          - Auth API
+ *      summary: Refresh existing token (re-create refresh token and return access token)
+ *      responses:
+ *          200:
+ *              description: Success
+ *          401:
+ *              description: Unauthorised
+ *          404:
+ *              description: The user not found
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/refresh', authController.refresh);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *  post:
+ *      tags:
+ *          - Auth API
+ *      summary: Log out from current account
+ *      responses:
+ *          200:
+ *              description: Success
+ *          401:
+ *              description: Unauthorised
+ *          404:
+ *              description: The user not found
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/logout', authController.logout);
 
 export default router;

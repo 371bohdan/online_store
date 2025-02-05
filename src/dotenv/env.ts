@@ -38,10 +38,23 @@ const envSchema = zod.object({
         'Invalid host URI'
     ),
 
-    JWT_SECRET_KEY: zod.string().refine(
+    JWT_ACCESS_SECRET_KEY: zod.string().refine(
         (secretKey) => secretKey.length >= 8,
-        'Invalid jwt secret key'
+        'Invalid jwt access secret key'
     ),
+
+    JWT_REFRESH_SECRET_KEY: zod.string().refine(
+        (secretKey) => secretKey.length >= 8,
+        'Invalid jwt refresh secret key'
+    ),
+
+    JWT_ACCESS_TOKEN_EXPIRES: zod.string()
+        .regex(/^\d+$/, 'Must be a number')
+        .transform((val) => Number(val)),
+
+    JWT_REFRESH_TOKEN_EXPIRES: zod.string()
+        .regex(/^\d+$/, 'Must be a number')
+        .transform((val) => Number(val)),
 
     OWNER_EMAIL: zod.string().email('Invalid email format')
 
