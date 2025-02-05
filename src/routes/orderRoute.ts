@@ -1,15 +1,14 @@
 import express from "express";
-import cartController from "../controllers/cartController";
 import orderController from "../controllers/orderController";
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/order/create:
+ * /api/orders/create:
  *   post:
  *     tags:
- *       - Order API
+ *       - orders API
  *     summary: Create an order based on the cart
  *     requestBody:
  *       required: true
