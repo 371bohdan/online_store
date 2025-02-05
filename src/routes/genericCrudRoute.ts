@@ -20,10 +20,10 @@ const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string
 
     //routes
     if (methodsToSecure.includes('get')) {
-        router.get('/', verifyAdminRole, controller.getAll);
+        router.get('/', verifyAdminRole, asyncHandler(controller.getAll));
         router.get('/:id', verifyAdminRole, asyncHandler(controller.getById));
     } else {
-        router.get('/', controller.getAll);
+        router.get('/', asyncHandler(controller.getAll));
         router.get('/:id', asyncHandler(controller.getById));
     }
 
@@ -40,10 +40,10 @@ const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string
     }
 
     if (methodsToSecure.includes('post')) {
-        router.delete('/', verifyAdminRole, controller.removeAll);
+        router.delete('/', verifyAdminRole, asyncHandler(controller.removeAll));
         router.delete('/:id', verifyAdminRole, asyncHandler(controller.removeById));
     } else {
-        router.delete('/', controller.removeAll);
+        router.delete('/', asyncHandler(controller.removeAll));
         router.delete('/:id', asyncHandler(controller.removeById));
     }
 
