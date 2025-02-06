@@ -12,6 +12,9 @@ const router: express.Router = express.Router();
  *      summary: Registration with email and password
  *      requestBody:
  *          required: true
+ *          description: | 
+ *              <strong>Email:</strong> unique, 10-40 characters, and match to the general email format. <br>
+ *              <strong>Password:</strong> 8-20 characters, according to the password format (must contain at least 1 letter in the upper register and at least 1 number)
  *          content: 
  *              application/json:
  *                  schema:
@@ -22,6 +25,7 @@ const router: express.Router = express.Router();
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
+ *                              example: String123
  *                      required:
  *                          - email
  *                          - password
@@ -64,11 +68,33 @@ router.post('/signUp', authController.signUp);
  */
 router.post('/accountRecovery', authController.accountRecovery);
 
-//working all (registr) except verify method (doesn't work properly)
+/**
+ * @swagger
+ * /api/auth/verifyEmail/{id}:
+ *  get:
+ *      tags:
+ *          - Auth API
+ *      summary: User email confirmation
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Type a verification code in the line below
+ *      responses:
+ *          200:
+ *              description: Success
+ *          404:
+ *              description: User not found
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/verifyEmail/:id', authController.verifyEmail);
 
 /**
  * @swagger
- * /api/auth/verify/{id}:
+ * /api/auth/confirm/{id}:
  *  post:
  *      tags:
  *          - Auth API
@@ -79,7 +105,7 @@ router.post('/accountRecovery', authController.accountRecovery);
  *            required: true
  *            schema:
  *              type: string
- *            description: Type a new password in the line below
+ *            description: Type a verification code in the line below
  *      requestBody:
  *          required: true
  *          content: 
@@ -89,6 +115,7 @@ router.post('/accountRecovery', authController.accountRecovery);
  *                      properties:
  *                          password:
  *                              type: string
+ *                              example: String123
  *                  required:
  *                      - password
  *      responses:
@@ -101,7 +128,7 @@ router.post('/accountRecovery', authController.accountRecovery);
  *          500:
  *              description: Internal server error
  */
-router.post('/verify/:id', authController.verifyAndChangePassword);
+router.post('/confirm/:id', authController.confirmAccountRecovery);
 
 /**
  * @swagger
@@ -122,6 +149,7 @@ router.post('/verify/:id', authController.verifyAndChangePassword);
  *                              example: example@gmail.com
  *                          password:
  *                              type: string
+ *                              example: String123
  *                  required:
  *                      - email
  *                      - password
@@ -134,5 +162,43 @@ router.post('/verify/:id', authController.verifyAndChangePassword);
  *              description: Internal server error
  */
 router.post('/signIn', authController.signIn);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *  post:
+ *      tags:
+ *          - Auth API
+ *      summary: Refresh existing token (re-create refresh token and return access token)
+ *      responses:
+ *          200:
+ *              description: Success
+ *          401:
+ *              description: Unauthorised
+ *          404:
+ *              description: The user not found
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/refresh', authController.refresh);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *  post:
+ *      tags:
+ *          - Auth API
+ *      summary: Log out from current account
+ *      responses:
+ *          200:
+ *              description: Success
+ *          401:
+ *              description: Unauthorised
+ *          404:
+ *              description: The user not found
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/logout', authController.logout);
 
 export default router;

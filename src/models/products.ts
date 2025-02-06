@@ -15,9 +15,10 @@ interface Describe {
 }
 
 export interface IProduct extends Document {
+    _id: Types.ObjectId;
     title: string;
     price: number;
-    image: Types.ObjectId[];  // Масив посилань на зображення
+    image: string[];
     describe: Describe;
     comments: Types.ObjectId[];
     collections?: CollectionsEnum | null;
@@ -32,13 +33,17 @@ const DescribeSchema = new Schema<Describe>({
 }, { _id: false });
 
 const ProductSchema = new Schema<IProduct>({
-    title: { type: String, required: true },
-    price: { type: Number, required: true, min: 0 },
+    title: { type: String, required: false },
+    price: { type: Number, required: false, min: 0 },
     image: { 
-        type: [{ type: Schema.Types.ObjectId, ref: 'Image' }],
-        default: [] 
+        type: [String],
+        default: [],
+        // validate: {
+        //     validator: (images: string[]) => images.every(url => /^https?:\/\/.+\.(jpg|jpeg|png)$/.test(url)),
+        //     message: 'Кожен елемент масиву image повинен бути валідним URL посиланням на зображення.'
+        // }
     },
-    describe: { type: DescribeSchema, required: true },
+    describe: { type: DescribeSchema, required: false },
     comments: { 
         type: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
         default: []
@@ -48,7 +53,7 @@ const ProductSchema = new Schema<IProduct>({
         enum: Object.values(CollectionsEnum),
         default: null,
     },
-    stock: { type: Number, required: true, min: 0 },
+    stock: { type: Number, required: false, min: 0 },
     rate_avg_product: { type: Number, default: 0 },
 });
 
