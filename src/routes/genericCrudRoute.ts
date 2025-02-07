@@ -1,15 +1,16 @@
 import express from 'express';
 import genericCrudController from '../controllers/genericCrudController';
 import { Document, Model } from 'mongoose';
-import swaggerOptions from '../swagger/swaggerOptions';
+import { swaggerOptions } from '../swagger/swaggerOptions';
 import { userSwaggerSchema } from '../models/users';
 import { productSwaggerSchema } from '../models/products';
 import { cartSwaggerSchema } from '../models/carts';
 import { deliverySwaggerSchema } from '../models/deliveries';
 import { orderSwaggerSchema } from '../models/orders';
-import { verifyAdminRole } from '../controllers/authController';
 import errorHandler from '../middleware/errors/errorHandler';
 import asyncHandler from '../middleware/errors/asyncHandler';
+import requireAuth from '../middleware/auth/requireAuth';
+import requireAdminOrOwnerRole from '../middleware/auth/requireAdminOrOwnerRole';
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string, methodsToSecure: Array<string>): express.Router => {
     const router: express.Router = express.Router();
@@ -20,28 +21,28 @@ const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string
 
     //routes
     if (methodsToSecure.includes('get')) {
-        router.get('/', verifyAdminRole, asyncHandler(controller.getAll));
-        router.get('/:id', verifyAdminRole, asyncHandler(controller.getById));
+        router.get('/', requireAuth, requireAdminOrOwnerRole, asyncHandler(controller.getAll));
+        router.get('/:id', requireAuth, requireAdminOrOwnerRole, asyncHandler(controller.getById));
     } else {
         router.get('/', asyncHandler(controller.getAll));
         router.get('/:id', asyncHandler(controller.getById));
     }
 
     if (methodsToSecure.includes('post')) {
-        router.post('/', verifyAdminRole, asyncHandler(controller.create));
+        router.post('/', requireAuth, requireAdminOrOwnerRole, asyncHandler(controller.create));
     } else {
         router.post('/', asyncHandler(controller.create));
     }
 
-    if (methodsToSecure.includes('post')) {
-        router.put('/:id', verifyAdminRole, asyncHandler(controller.update));
+    if (methodsToSecure.includes('put')) {
+        router.put('/:id', requireAuth, requireAdminOrOwnerRole, asyncHandler(controller.update));
     } else {
         router.put('/:id', asyncHandler(controller.update));
     }
 
-    if (methodsToSecure.includes('post')) {
-        router.delete('/', verifyAdminRole, asyncHandler(controller.removeAll));
-        router.delete('/:id', verifyAdminRole, asyncHandler(controller.removeById));
+    if (methodsToSecure.includes('delete')) {
+        router.delete('/', requireAuth, requireAdminOrOwnerRole, asyncHandler(controller.removeAll));
+        router.delete('/:id', requireAuth, requireAdminOrOwnerRole, asyncHandler(controller.removeById));
     } else {
         router.delete('/', asyncHandler(controller.removeAll));
         router.delete('/:id', asyncHandler(controller.removeById));

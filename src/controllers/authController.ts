@@ -1,14 +1,14 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import bcrypt from 'bcryptjs'
 import User, { IUser } from "../models/users";
 import mailController from "../mail/mailController";
 import { randomUUID } from "crypto";
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { HydratedDocument, ObjectId } from "mongoose";
+import jwt from 'jsonwebtoken';
+import mongoose, { HydratedDocument, isValidObjectId, ObjectId } from "mongoose";
 import { ENV } from "../dotenv/env";
 import { UserRoles } from "../models/enums/userRolesEnum";
 import ms from 'ms';
-import { NotFoundError } from "../errors/ApiError";
+import { AuthorizationError, NotFoundError } from "../errors/ApiError";
 
 const authController = {
     signUp: async (req: Request, res: Response): Promise<void> => {
@@ -183,40 +183,50 @@ function generateJwtRefreshToken(userId: ObjectId) {
     return jwt.sign({ userId }, jwtRefreshSecretKey, { expiresIn: `${JWT_REFRESH_TOKEN_EXPIRES}d` })
 }
 
-export const verifyAdminRole = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-        const bearerToken = req.headers.authorization || '';
-        if (bearerToken.length === 0) {
-            return res.status(401).send('You don\'t have an auth token');
+/**
+ * Returns JWT token without authentication scheme ('Bearer' part before a token)
+ * @param bearerToken Expected raw token from 'Authorization' header
+ * @throws The authorization error if token is not presented
+ */
+export function getJwtTokenWithoutAuthScheme(bearerToken: string | undefined): string {
+    if (bearerToken === undefined || bearerToken.length === 0) {
+        throw new AuthorizationError("You don't have an auth token");
+    }
+
+    return bearerToken.substring(7, bearerToken.length);
+}
+
+/**
+ * Returns the user id, stored in a payload, encrypted (using a secret key) in the JWT access token
+ * @param accessToken The JWT access token
+ * @throws The Authorization error if the token isn't a valid 'ObjectId' type
+ */
+export function getUserIdFromJwtToken(accessToken: string): mongoose.Types.ObjectId {
+    const jwtPayload = jwt.verify(accessToken, ENV.JWT_ACCESS_SECRET_KEY);
+
+    if (typeof jwtPayload === 'object') {
+        if (!isValidObjectId(jwtPayload.userId)) {
+            throw new AuthorizationError('Incorrect auth token');
         }
 
-        const token = bearerToken.substring(7, bearerToken.length) || '';
-        const jwtPayload = getJwtPayload(token);
+        return jwtPayload.userId;
 
-        if (typeof jwtPayload !== 'string') {
-            const user = await User.findById(jwtPayload.userId);
-
-            if (user?.role === UserRoles.ADMIN || user?.role === UserRoles.OWNER) {
-                next();
-                return;
-            }
-
-            return res.status(403).send('You don\'t have access to interact with this route.');
+    } else {
+        if (!isValidObjectId(jwtPayload)) {
+            throw new AuthorizationError('Incorrect auth token');
         }
 
-        return res.status(401).send('Incorrect auth token');
-    } catch (error) {
-        next(error);
+        return new mongoose.Types.ObjectId(jwtPayload);
     }
 }
 
 /**
- * Returns a payload encrypted in the JWT access token using a secret key.
+ * Returns truth value ('true') if the token is valid (successfully passed through the jwt.verify method ('jsonwebtoken' library))
  * @param accessToken The JWT access token
  */
-function getJwtPayload(accessToken: string): JwtPayload | string {
-    const jwtSecretKey = ENV.JWT_ACCESS_SECRET_KEY;
-    return jwt.verify(accessToken, jwtSecretKey);
+export function isValidAccessToken(accessToken: string): boolean {
+    jwt.verify(accessToken, ENV.JWT_ACCESS_SECRET_KEY);
+    return true;
 }
 
 function isPasswordValid(password: String, res: Response): Boolean {

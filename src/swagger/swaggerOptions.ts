@@ -21,5 +21,10 @@ const options = {
     apis: ['./src/routes/*.ts']
 }
 
-const swaggerOptions: swaggerJsdoc.Options = swaggerJsdoc(options);
-export default swaggerOptions;
+export const swaggerUiOptions = {
+    swaggerOptions: {
+        docExpansion: 'none'
+    },
+}
+
+export const swaggerOptions: swaggerJsdoc.Options = swaggerJsdoc(options);

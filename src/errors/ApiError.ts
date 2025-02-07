@@ -10,21 +10,6 @@ class ApiError extends Error {
     }
 }
 
-class ErrorResponse {
-    title: string;
-    statusCode: number;
-    message: string;
-    date: string;
-
-    constructor(title: string, statusCode: number, message: string) {
-        this.title = title;
-        this.statusCode = statusCode;
-        this.message = message;
-        const dateTime = new Date();
-        this.date = dateTime.toLocaleDateString() + ', ' + dateTime.toLocaleTimeString();
-    }
-}
-
 class NotFoundError extends ApiError {
     constructor(modelName: string) {
         const statusCode = StatusCodes.NOT_FOUND;
@@ -40,4 +25,19 @@ class ValidationError extends ApiError {
     }
 }
 
-export { ApiError, ErrorResponse, NotFoundError, ValidationError };
+class AuthorizationError extends ApiError {
+    constructor(message: string) {
+        const statusCode = StatusCodes.UNAUTHORIZED;
+        super(statusCode, message);
+    }
+}
+
+class AccessDeniedError extends ApiError {
+    constructor() {
+        const statusCode = StatusCodes.FORBIDDEN;
+        const message = "You don't have access to interact with this route";
+        super(statusCode, message);
+    }
+}
+
+export { ApiError, NotFoundError, ValidationError, AuthorizationError, AccessDeniedError };
