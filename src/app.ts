@@ -35,8 +35,7 @@ import { initialiseOwnerAccount } from './api/services/authService';
 initialiseOwnerAccount();
 
 //user routes
-import User, { IUser } from './api/models/users';
-const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']);
+import userRoute from './api/routes/userRoute';
 app.use('/api/users', userRoute);
 
 //product routes
