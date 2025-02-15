@@ -32,6 +32,9 @@ const uploadAndGetUrl = async (req: Request, res: Response): Promise<string | nu
     return publicUrlData.publicUrl;
 };
 
+
+
+// default title = "", sort="asc";
 const productOptController = {
     searchForName: async (req: Request, res: Response): Promise<void> => {
         try {
