@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose from "mongoose";
 import mongooseToSwagger from 'mongoose-to-swagger';
 import { UserRoles } from "./enums/userRolesEnum";
 import bcrypt from 'bcryptjs'
@@ -11,9 +11,11 @@ export interface IUser extends mongoose.Document {
     lastName: string,
     avatar: String;
     recoveryCode: string,
+    recoveryCodeCreatedAt: Date,
     role: string,
     isVerified: Boolean,
     verificationCode: string,
+    verificationCodeCreatedAt: Date,
     refreshToken: string
 }
 
@@ -58,6 +60,10 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         default: undefined
     },
 
+    recoveryCodeCreatedAt: {
+        type: Date
+    },
+
     role: {
         type: String,
         enum: UserRoles,
@@ -73,6 +79,10 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         type: String
     },
 
+    verificationCodeCreatedAt: {
+        type: Date
+    },
+
     refreshToken: {
         type: String
     }
@@ -82,6 +92,7 @@ userSchema.pre<IUser>('save', async function (next) {
     this.password = bcrypt.hashSync(this.password, 10);
     if (!this.isVerified) {
         this.verificationCode = randomUUID();
+        this.verificationCodeCreatedAt = new Date();
     }
 
     next();

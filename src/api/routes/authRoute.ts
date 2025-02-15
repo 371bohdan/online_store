@@ -84,10 +84,51 @@ router.post('/passwordRecovery', authController.passwordRecovery);
  *      responses:
  *          200:
  *              description: Success or wrong verification code (decided to hide this error for more users safety)
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Message'
+ *          400:
+ *              description: The verification code has expired (its duration - 10m)
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+ */
+router.get('/verifyEmail/:id', authController.verifyEmail);
+
+/**
+ * @swagger
+ * /api/auth/resend-verification-letter:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: Regenerate a verification code and send it to a given email
+ *      requestBody:
+ *          required: true
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: example@gmail.com
+ *                  required:
+ *                      - email
+ *      responses:
+ *          200:
+ *              description: Success or wrong email address (decided to hide this error for more users safety)
  *          500:
  *              description: Internal server error
  */
-router.get('/verifyEmail/:id', authController.verifyEmail);
+router.post('/resend-verification-letter', authController.resendVerificationLetter);
 
 /**
  * @swagger
@@ -170,8 +211,6 @@ router.post('/signIn', authController.signIn);
  *              description: Success
  *          401:
  *              description: Unauthorised
- *          404:
- *              description: The user not found
  *          500:
  *              description: Internal server error
  */
@@ -187,10 +226,6 @@ router.post('/refresh', authController.refreshToken);
  *      responses:
  *          204:
  *              description: Success
- *          401:
- *              description: Unauthorised
- *          404:
- *              description: The user not found
  *          500:
  *              description: Internal server error
  */

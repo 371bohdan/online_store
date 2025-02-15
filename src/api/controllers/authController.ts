@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { authService } from "../services/authService";
 import asyncHandler from "../middleware/errors/asyncHandler";
 import { StatusCodes } from "http-status-codes";
+import { ErrorResponse } from "../errors/ErrorResponse";
 
 export const authController = {
     signUp: asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -34,16 +35,22 @@ export const authController = {
         res.json({ message });
     },
 
-    confirmPasswordRecovery: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    confirmPasswordRecovery: async (req: Request, res: Response): Promise<void> => {
         const { password } = req.body;
         const recoveryCode = req.params.id;
         const message = await authService.confirmPasswordRecovery(recoveryCode, password);
-        res.json(message);
-    }),
+        message instanceof ErrorResponse ? res.json(message) : res.json({ message });
+    },
 
     verifyEmail: async (req: Request, res: Response): Promise<void> => {
         const { id } = req.params;
-        const message = await authService.verifyEmail(id);
-        res.json({ message })
+        const message = await authService.verifyEmail(id, res);
+        message instanceof ErrorResponse ? res.json(message) : res.json({ message });
+    },
+
+    resendVerificationLetter: async (req: Request, res: Response): Promise<void> => {
+        const { email } = req.body;
+        const message = await authService.resendVerificationLetter(email);
+        res.json({ message });
     }
 }

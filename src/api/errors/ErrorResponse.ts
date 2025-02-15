@@ -1,6 +1,6 @@
 import { getReasonPhrase } from "http-status-codes";
 
-class ErrorResponse {
+export class ErrorResponse {
     title: string;
     statusCode: number;
     message: string;

@@ -17,24 +17,8 @@ export const jwtService = {
      */
     generateJwtToken: (userId: mongoose.Types.ObjectId, jwtTokenType: JwtTokenTypes): string => {
         const jwtSecretKey = getJwtSecretKey(jwtTokenType);
-        const expiresIn = jwtService.getExpiresTimeOfJwtToken(jwtTokenType);
+        const expiresIn = getExpiresTimeOfJwtToken(jwtTokenType);
         return jwt.sign({ userId }, jwtSecretKey, { expiresIn });
-    },
-
-    /**
-     * Returns a time, after which the jwt token will expire (from the moment of creation)
-     * @param jwtTokenType The token type
-     * @throws The JsonWebTokenError exception if the given token type can't be processed
-     */
-    getExpiresTimeOfJwtToken: (jwtTokenType: JwtTokenTypes): string => {
-        if (jwtTokenType === JwtTokenTypes.ACCESS) {
-            return `${ENV.JWT_ACCESS_TOKEN_EXPIRES}m`;
-
-        } else if (jwtTokenType === JwtTokenTypes.REFRESH) {
-            return `${ENV.JWT_REFRESH_TOKEN_EXPIRES}d`;
-        }
-
-        throw new JsonWebTokenError("Sorry, we are unable to process your request");
     },
 
     /**
@@ -127,6 +111,22 @@ function getJwtSecretKey(tokenType: JwtTokenTypes): string {
 
     } else if (tokenType === JwtTokenTypes.REFRESH) {
         return ENV.JWT_REFRESH_SECRET_KEY;
+    }
+
+    throw new JsonWebTokenError("Sorry, we are unable to process your request");
+}
+
+/**
+     * Returns a time, after which the jwt token will expire (from the moment of creation)
+     * @param jwtTokenType The token type
+     * @throws The JsonWebTokenError exception if the given token type can't be processed
+     */
+function getExpiresTimeOfJwtToken(jwtTokenType: JwtTokenTypes): string {
+    if (jwtTokenType === JwtTokenTypes.ACCESS) {
+        return `${ENV.JWT_ACCESS_TOKEN_EXPIRES}m`;
+
+    } else if (jwtTokenType === JwtTokenTypes.REFRESH) {
+        return `${ENV.JWT_REFRESH_TOKEN_EXPIRES}d`;
     }
 
     throw new JsonWebTokenError("Sorry, we are unable to process your request");
