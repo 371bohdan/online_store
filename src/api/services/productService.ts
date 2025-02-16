@@ -4,24 +4,37 @@ import { imageService } from './auxiliary/imageService';
 import { CollectionsEnum } from '../models/enums/collectionsEnum';
 
 export const productService = {
-    searchForName: async (title: string = '', sort: string = 'asc'): Promise<Array<HydratedDocument<IProduct>>> => {
+    productFilterSort: async (title: string = '', sortBy: string = '', sort: string = 'desc'): Promise<Array<HydratedDocument<IProduct>>> => {
         let query = Product.find();
     
+        // Фільтрація за назвою, якщо передано title
         if (title) {
-            query = query.where('title').regex(new RegExp(`^${title}`, "i")); // ^ - початок рядка
+            query = query.where('title').regex(new RegExp(`^${title}`, "i"));
         }
     
-        query = query.sort({
-            price: sort === "asc" ? 1 : -1,
-        });
+        // Об'єкт для умов сортування
+        const sortConditions: { [key: string]: 1 | -1 } = {};
+    
+        // Якщо параметри порожні, використовуємо дефолтне сортування за датою (новіші першими)
+        if (!sortBy) {
+            sortConditions.createdAt = -1;
+        } else {
+            const sortFields = sortBy.split(',');
+    
+            // Пріоритетність сортування: спочатку price, потім createdAt
+            if (sortFields.includes('price')) {
+                sortConditions.price = sort === "asc" ? 1 : -1;
+            }
+    
+            if (sortFields.includes('createdAt')) {
+                sortConditions.createdAt = sort === "asc" ? 1 : -1;
+            }
+        }
+    
+        // Додаємо сортування до запиту
+        query = query.sort(sortConditions);
     
         return await query;
-    },
-
-    sortForPrice: async (sort: string): Promise<Array<HydratedDocument<IProduct>>> => {
-        return await Product.find().sort({
-            price: sort === "asc" ? 1 : -1, // 1 - за зростанням, -1 - за спаданням
-        });
     },
 
     createProduct: async (title: string, price: number, type_candle: string, size: number,

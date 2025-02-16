@@ -12,28 +12,36 @@ const router: express.Router = express.Router();
 
 /**
  * @swagger
- * /api/products/title:
+ * /api/products:
  *   get:
  *     tags:
  *       - products API
- *     summary: Search for products by title
+ *     summary: Search and filter products
+ *     description: Fetch products with optional filtering by title and sorting by price or createdAt (individually or combined).
  *     parameters:
  *       - in: query
  *         name: title
  *         schema:
  *           type: string
  *         required: false
- *         description: The title or part of the title to search for
+ *         description: Filter products by title (case-insensitive, partial match)
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [price, createdAt, price,createdAt, createdAt,price]
+ *         required: false
+ *         description: Sorting field(s). Use "price", "createdAt", or a combination ("price,createdAt"). "price" has higher priority.
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *         required: false
- *         description: Sort order for the price. Use "asc" for ascending or "desc" for descending.
+ *         description: Sorting order. Use "asc" for ascending or "desc" for descending. Default is "desc".
  *     responses:
  *       200:
- *         description: Success
+ *         description: Successful response with filtered and sorted products
  *         content:
  *           application/json:
  *             schema:
@@ -47,47 +55,17 @@ const router: express.Router = express.Router();
  *                     type: string
  *                   price:
  *                     type: number
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
  *                   description:
  *                     type: string
  *       400:
- *         description: The query parameter is missing or invalid
+ *         description: Invalid query parameters
  *       500:
  *         description: Internal server error
  */
-router.get('/title', productController.searchForName);
-
-
-
-// GET /api/products/sort?sort=asc
-// GET /api/products/sort?sort=desc
-
-/**
- * @swagger
- * /api/products/sort:
- *   get:
- *     tags:
- *       - products API
- *     summary: Sort products by price
- *     parameters:
- *       - in: query
- *         name: sort
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *           default: asc
- *         required: false
- *         description: Sort order for price (asc or desc)
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: The query parameter is missing or invalid
- *       500:
- *         description: Internal server error
- */
-
-
-router.get('/sort', productController.sortForPrice);
+router.get('/', productController.productFilterSort);
 
 
 
