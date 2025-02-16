@@ -2,40 +2,30 @@ import { HydratedDocument } from 'mongoose';
 import Product, { IProduct } from "../models/products";
 import { imageService } from './auxiliary/imageService';
 import { CollectionsEnum } from '../models/enums/collectionsEnum';
+import { SortOrder } from 'mongoose';
 
 export const productService = {
-    productFilterSort: async (title: string = '', sortBy: string = '', sort: string = 'desc'): Promise<Array<HydratedDocument<IProduct>>> => {
-        let query = Product.find();
-    
-        // Фільтрація за назвою, якщо передано title
-        if (title) {
-            query = query.where('title').regex(new RegExp(`^${title}`, "i"));
-        }
-    
-        // Об'єкт для умов сортування
-        const sortConditions: { [key: string]: 1 | -1 } = {};
-    
-        // Якщо параметри порожні, використовуємо дефолтне сортування за датою (новіші першими)
-        if (!sortBy) {
-            sortConditions.createdAt = -1;
-        } else {
-            const sortFields = sortBy.split(',');
-    
-            // Пріоритетність сортування: спочатку price, потім createdAt
-            if (sortFields.includes('price')) {
-                sortConditions.price = sort === "asc" ? 1 : -1;
+    productFilterSort: async (    title: string = '', 
+        sortPrice: SortOrder = 'asc', 
+        sortDate: SortOrder = 'desc'): Promise<Array<HydratedDocument<IProduct>>> => {
+
+            let query = Product.find();
+
+            // Фільтрація за title
+            if (title) {
+                query = query.where('title').regex(new RegExp(title, 'i'));
             }
-    
-            if (sortFields.includes('createdAt')) {
-                sortConditions.createdAt = sort === "asc" ? 1 : -1;
-            }
-        }
-    
-        // Додаємо сортування до запиту
-        query = query.sort(sortConditions);
-    
-        return await query;
+        
+            // Виправлене сортування
+            const sortConditions: Record<string, SortOrder> = {
+                price: sortPrice,
+                createdAt: sortDate
+            };
+        
+            query = query.sort(sortConditions);
+            return await query;
     },
+ 
 
     createProduct: async (title: string, price: number, type_candle: string, size: number,
         aroma: string, appointment: string, burning_time: string, short_describe: string, 
