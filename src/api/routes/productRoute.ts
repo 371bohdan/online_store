@@ -22,7 +22,7 @@ const router: express.Router = express.Router();
  *         name: title
  *         schema:
  *           type: string
- *         required: true
+ *         required: false
  *         description: The title or part of the title to search for
  *       - in: query
  *         name: sort
@@ -74,7 +74,8 @@ router.get('/title', productController.searchForName);
  *         schema:
  *           type: string
  *           enum: [asc, desc]
- *         required: true
+ *           default: asc
+ *         required: false
  *         description: Sort order for price (asc or desc)
  *     responses:
  *       200:
@@ -90,108 +91,90 @@ router.get('/sort', productController.sortForPrice);
 
 
 
-
 /**
  * @swagger
- * /api/products:
- *   post:
- *     tags:
- *       - products API
- *     summary: Create a new product
- *     consumes:
- *       - multipart/form-data
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *                 example: "Ароматична свічка Лаванда"
- *               price:
- *                 type: number
- *                 minimum: 0
- *                 example: 249.99
- *               describe:
- *                 type: object
- *                 properties:
- *                   aroma:
- *                     type: string
- *                     example: "Лаванда"
- *                   burning_time:
- *                     type: string
- *                     example: "40 годин"
- *                   short_describe:
- *                     type: string
- *                     example: "Ароматична свічка з натурального воску"
- *               collections:
- *                 type: string
- *                 enum: [summer, spring, autumn, winter]
- *                 example: "spring"
- *               stock:
- *                 type: number
- *                 minimum: 0
- *                 example: 50
- *               file:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: binary
- *                 description: Масив файлів-зображень продукту
- *     responses:
- *       201:
- *         description: Продукт успішно створений
+ * paths:
+ *   /api/products:
+ *     post:
+ *       tags:
+ *         - products API
+ *       summary: Створення нового продукту
+ *       consumes:
+ *         - multipart/form-data
+ *       requestBody:
+ *         required: true
  *         content:
- *           application/json:
+ *           multipart/form-data:
  *             schema:
  *               type: object
  *               properties:
- *                 _id:
- *                   type: string
- *                   example: "65a123abc456def789"
  *                 title:
  *                   type: string
  *                   example: "Ароматична свічка Лаванда"
  *                 price:
  *                   type: number
  *                   example: 249.99
- *                 image:
- *                   type: array
- *                   items:
- *                     type: string
- *                     example: "https://xyz.supabase.co/storage/v1/object/public/products/1706789123456_image.jpg"
- *                 describe:
- *                   type: object
- *                   properties:
- *                     aroma:
- *                       type: string
- *                       example: "Лаванда"
- *                     burning_time:
- *                       type: string
- *                       example: "40 годин"
- *                     short_describe:
- *                       type: string
- *                       example: "Ароматична свічка з натурального воску"
- *                 collections:
- *                   type: string
- *                   enum: [summer, spring, autumn, winter]
- *                   example: "spring"
  *                 stock:
  *                   type: number
  *                   example: 50
- *       400:
- *         description: Некоректний запит або відсутній файл
- *       500:
- *         description: Внутрішня помилка сервера
+ *                 size:
+ *                   type: number
+ *                   example: 10
+ *                 type_candle:
+ *                   type: string
+ *                   example: "Ароматичні свічки"
+ *                   enum: ["Декоративні", "Набори свічок", "Плаваючі", "Розсипні", "Фігурні", "Свічки в баночках", "Класичні", "Ручна робота", "Бездимні", "Ароматичні свічки"]
+ *                 aroma:
+ *                   type: string
+ *                   example: "Ранкова кава"
+ *                   enum: ["Ранкова кава", "Вечірня хатка", "Після дощу в лісі", "Теплий хліб", "З дерев'яними гнотами", "Медова теплість", "Свічки без аромату", "Тепле молоко", "Золота осінь", "Свіжість садка", "Літній вечір"]
+ *                 appointment:
+ *                   type: string
+ *                   example: "Для релаксу"
+ *                   enum: ["Для декору", "Для релаксу", "Для масажу"]
+ *                 burning_time:
+ *                   type: string
+ *                   example: "40 годин"
+ *                 short_describe:
+ *                   type: string
+ *                   example: "Ароматична свічка з натурального воску"
+ *                 color:
+ *                   type: string
+ *                   example: "Білий"
+ *                   enum: ["Зелений", "Червоний", "Чорний", "Кремовий", "Білий", "Золотий", "Пастельні тони"]
+ *                 material:
+ *                   type: string
+ *                   example: "Соєвий віск"
+ *                   enum: ["Кокосовий віск", "Бджолиний віск", "Парафін", "Соєвий віск"]
+ *                 shape:
+ *                   type: string
+ *                   example: "Спіральна"
+ *                   enum: ["Спіральна", "Квадратна"]
+ *                 features:
+ *                   type: string
+ *                   example: "Еко-дружні"
+ *                   enum: ["Натуральні інгредієнти", "Еко-дружні", "Антиалергічні", "Для подарунка", "Для особливих моментів"]
+ *                 gift_packaging:
+ *                   type: boolean
+ *                   example: true
+ *                 file:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     format: binary
+ *                   description: Масив файлів-зображень продукту
+ *       responses:
+ *         201:
+ *           description: Продукт успішно створений
+ *         400:
+ *           description: Некоректний запит або відсутній файл
+ *         500:
+ *           description: Внутрішня помилка сервера
  */
 
 router.post('/', upload.single('file'), productController.createProduct);
 
-router.use(genericCrudRoute(Product as Model<IProduct>, "products", ['put', 'delete']));
-router.use(errorHandler);
-
+router.use(genericCrudRoute(Product as Model<IProduct>, "products", []));
 export default router;
 
 

@@ -7,7 +7,7 @@ export const imageService = {
     uploadFile: async (file: Express.Multer.File): Promise<string> => {
         const fileName = `${Date.now()}_${file.originalname}`;
 
-        const { data, error } = await supabase
+        const { error } = await supabase
             .storage
             .from(ENV.SUPABASE_BUCKET_NAME)
             .upload(fileName, file.buffer, {
@@ -20,8 +20,29 @@ export const imageService = {
             throw new ImageUploadError(StatusCodes.INTERNAL_SERVER_ERROR, 'The error occurred while uploading a file');
         }
 
-        const { data: publicUrlData } = supabase.storage.from(ENV.SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
-
-        return publicUrlData.publicUrl;
+        return fileName;
     },
 }
+
+
+
+    // uploadFile: async (file: Express.Multer.File): Promise<string> => {
+    //     const fileName = `${Date.now()}_${file.originalname}`;
+
+    //     const { data, error } = await supabase
+    //         .storage
+    //         .from(ENV.SUPABASE_BUCKET_NAME)
+    //         .upload(fileName, file.buffer, {
+    //             cacheControl: '3600',
+    //             upsert: false
+    //         });
+
+    //     if (error) {
+    //         console.error('Error upon upload to Supabase:', error);
+    //         throw new ImageUploadError(StatusCodes.INTERNAL_SERVER_ERROR, 'The error occurred while uploading a file');
+    //     }
+
+    //     const { data: publicUrlData } = supabase.storage.from(ENV.SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
+
+    //     return publicUrlData.publicUrl;
+    // },

@@ -8,9 +8,9 @@ import ApiError from "../errors/ApiError";
 
 const productOptController = {
     searchForName: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { title, sort } = req.query as { title?: string, sort?: string };
-        if (!title || !sort) {
-            throw new MissingParameterError(undefined, 'Search query is required');
+        const { title = '', sort = 'asc' } = req.query as { title?: string, sort?: string };
+        if (sort !== 'asc' && sort !== 'desc') {
+            throw new MissingParameterError(undefined, 'Sort query is required');
         }
 
         const products = await productService.searchForName(title, sort);
@@ -28,18 +28,21 @@ const productOptController = {
     }),
 
     createProduct: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { title, price, describe, collections, stock } = req.body;
+        const {
+            title, price, type_candle, size, aroma, appointment, burning_time, 
+            short_describe, color, material, shape, features, gift_packaging, stock
+        } = req.body;
         const file = req.file;
 
         if (!file) {
             throw new ImageUploadError(StatusCodes.BAD_REQUEST, 'File is missing');
         }
 
-        if (typeof describe !== 'string') {
-            throw new ApiError(StatusCodes.BAD_REQUEST, 'Невірний формат опису продукту');
-        }
+        const createdProduct = await productService.createProduct(
+            title, price, type_candle, size, aroma, appointment, burning_time, 
+            short_describe, color, material, shape, features, gift_packaging, stock, file
+        );
 
-        const createdProduct = await productService.createProduct(title, price, describe, collections, stock, file);
         res.status(StatusCodes.CREATED).json(createdProduct);
     })
 };

@@ -21,9 +21,6 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               cartId:
- *                 type: string
- *                 description: ID of your cart
  *               deliveryCompanyId:
  *                 type: string
  *                 description: Delivery company including price and delivery method
@@ -39,13 +36,24 @@ const router = express.Router();
  *               email:
  *                 type: string
  *                 description: Client's email address
+ *               products:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     productId:
+ *                       type: string
+ *                       description: Product ID
+ *                     quantity:
+ *                       type: integer
+ *                       description: Quantity of the product
  *             required:
- *               - cartId
  *               - deliveryCompanyId
  *               - firstName
  *               - lastName
  *               - telephone
  *               - email
+ *               - products
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -63,9 +71,6 @@ const router = express.Router();
  *                     userId:
  *                       type: string
  *                       description: User ID associated with the order
- *                     cartId:
- *                       type: string
- *                       description: ID of the cart used to create the order
  *                     deliveryCompanyId:
  *                       type: string
  *                       description: Selected delivery company ID
@@ -114,10 +119,9 @@ const router = express.Router();
  *                   type: object
  */
 
-
 router.post("/create", orderController.createOrder);
 
-router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['get', 'post', 'put', 'delete']));
+router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['put', 'delete']));
 router.use(errorHandler);
 
 export default router;

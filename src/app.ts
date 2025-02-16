@@ -35,8 +35,7 @@ import { initialiseOwnerAccount } from './api/services/authService';
 initialiseOwnerAccount();
 
 //user routes
-import User, { IUser } from './api/models/users';
-const userRoute: express.Router = genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']);
+import userRoute from './api/routes/userRoute';
 app.use('/api/users', userRoute);
 
 //product routes
@@ -45,7 +44,7 @@ app.use('/api/products', productRoute);
 
 //devlivery crud routes
 import Delivery, { IDelivery } from './api/models/deliveries';
-const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['get', 'post', 'put', 'delete']);
+const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['post', 'put', 'delete']);
 app.use('/api/deliveries', deviveryRoute);
 
 //order routes

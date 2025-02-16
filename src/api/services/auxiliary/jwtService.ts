@@ -5,6 +5,8 @@ import { JwtTokenTypes } from "../../models/enums/jwtTokenTypesEnum";
 import AuthorizationError from "../../errors/auth/AuthorizationError";
 import { Response } from "express";
 import ms from "ms";
+import { IUser } from "../../models/users";
+import { getUserByField } from "../userService";
 
 export const jwtService = {
     /**
@@ -105,6 +107,12 @@ export const jwtService = {
      */
     clearJwtCookie: (res: Response): void => {
         res.clearCookie('jwt', { httpOnly: true, secure: true, sameSite: 'none' });
+    },
+
+    getUserFromBearerToken: async (bearerToken: string | undefined): Promise<IUser> => {
+        const token = jwtService.getJwtTokenWithoutAuthScheme(bearerToken);
+        const userId = jwtService.getUserIdFromJwtToken(token, JwtTokenTypes.ACCESS);
+        return await getUserByField('_id', userId);
     }
 }
 
