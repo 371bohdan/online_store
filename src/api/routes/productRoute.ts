@@ -8,37 +8,38 @@ import genericCrudRoute from "./genericCrudRoute";
 
 const router: express.Router = express.Router();
 
-// GET /api/products/title
+// GET /api/products
+
 
 /**
  * @swagger
  * /api/products:
  *   get:
+ *     summary: Отримати список продуктів з фільтрацією та сортуванням
+ *     description: Дозволяє отримати список продуктів з можливістю фільтрації за назвою та сортуванням за ціною або датою створення.
  *     tags:
  *       - products API
- *     summary: Search and filter products
- *     description: Fetch products with optional filtering by title and sorting by price or createdAt (individually or combined).
  *     parameters:
  *       - in: query
  *         name: title
  *         schema:
  *           type: string
  *         required: false
- *         description: Filter products by title (case-insensitive, partial match)
+ *         description: Пошук за назвою продукту (нечіткий пошук)
  *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           enum: [price, createdAt, price,createdAt, createdAt,price]
- *         required: false
- *         description: Sorting field(s). Use "price", "createdAt", or a combination ("price,createdAt"). "price" has higher priority.
- *       - in: query
- *         name: sort
+ *         name: sortPrice
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *         required: false
- *         description: Sorting order. Use "asc" for ascending or "desc" for descending. Default is "desc".
+ *         description: Сортування за ціною (asc - зростання, desc - спадання)
+ *       - in: query
+ *         name: sortDate
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         required: false
+ *         description: Сортування за датою створення (asc - старіші перші, desc - новіші перші)
  *     responses:
  *       200:
  *         description: Successful response with filtered and sorted products
@@ -61,10 +62,11 @@ const router: express.Router = express.Router();
  *                   description:
  *                     type: string
  *       400:
- *         description: Invalid query parameters
+ *         description: Невірні параметри сортування
  *       500:
- *         description: Internal server error
+ *         description: Внутрішня помилка сервера
  */
+
 router.get('/', productController.productFilterSort);
 
 
