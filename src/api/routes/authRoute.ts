@@ -1,0 +1,200 @@
+import express from "express";
+import { authController } from "../controllers/authController";
+import errorHandler from "../middleware/errors/errorHandler";
+
+const router: express.Router = express.Router();
+
+/**
+ * @swagger
+ * /api/auth/signUp:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: Registration with email and password
+ *      requestBody:
+ *          required: true
+ *          description: | 
+ *              <strong>Email:</strong> unique, 10-40 characters, and match to the general email format. <br>
+ *              <strong>Password:</strong> 8-20 characters, according to the password format (must contain at least 1 letter in the upper register and at least 1 number)
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: example@gmail.com
+ *                          password:
+ *                              type: string
+ *                              example: String123
+ *                      required:
+ *                          - email
+ *                          - password
+ *      responses:
+ *          200:
+ *              description: Success
+ *          400:
+ *              description: The body doesn't match the required properties
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/signUp', authController.signUp);
+
+/**
+ * @swagger
+ * /api/auth/passwordRecovery:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: Sending the email with the URI to restore the user account
+ *      requestBody:
+ *          required: true
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: example@gmail.com
+ *                  required:
+ *                      - email
+ *      responses:
+ *          200:
+ *              description: Success or wrong email (decided to hide this error for more users safety)
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/passwordRecovery', authController.passwordRecovery);
+
+/**
+ * @swagger
+ * /api/auth/verifyEmail/{id}:
+ *  get:
+ *      tags:
+ *          - auth API
+ *      summary: User email confirmation
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Type a verification code in the line below
+ *      responses:
+ *          200:
+ *              description: Success or wrong verification code (decided to hide this error for more users safety)
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/verifyEmail/:id', authController.verifyEmail);
+
+/**
+ * @swagger
+ * /api/auth/confirm/{id}:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: Checking the recovery code and changing the password
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Type a verification code in the line below
+ *      requestBody:
+ *          required: true
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          password:
+ *                              type: string
+ *                              example: String123
+ *                  required:
+ *                      - password
+ *      responses:
+ *          200:
+ *              description: Success or wrong recovery code (decided to hide this error for more users safety)
+ *          400:
+ *              description: The body doesn't match the required properties
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/confirm/:id', authController.confirmPasswordRecovery);
+
+/**
+ * @swagger
+ * /api/auth/signIn:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: account login
+ *      requestBody:
+ *          required: true
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: example@gmail.com
+ *                          password:
+ *                              type: string
+ *                              example: String123
+ *                  required:
+ *                      - email
+ *                      - password
+ *      responses:
+ *          200:
+ *              description: Success
+ *          400:
+ *              description: Incorrect incoming data (email or password).
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/signIn', authController.signIn);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: Refresh existing token (re-create refresh token and return access token)
+ *      responses:
+ *          200:
+ *              description: Success
+ *          401:
+ *              description: Unauthorised
+ *          404:
+ *              description: The user not found
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/refresh', authController.refreshToken);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *  post:
+ *      tags:
+ *          - auth API
+ *      summary: Log out from current account
+ *      responses:
+ *          204:
+ *              description: Success
+ *          401:
+ *              description: Unauthorised
+ *          404:
+ *              description: The user not found
+ *          500:
+ *              description: Internal server error
+ */
+router.post('/logout', authController.logout);
+router.use(errorHandler);
+
+export default router;
