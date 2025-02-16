@@ -5,27 +5,32 @@ import asyncHandler from "../middleware/errors/asyncHandler";
 import { productService } from "../services/productService";
 import MissingParameterError from "../errors/validation/MissingParameterError";
 import ApiError from "../errors/ApiError";
-
-const productOptController = {
-    searchForName: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { title = '', sort = 'asc' } = req.query as { title?: string, sort?: string };
-        if (sort !== 'asc' && sort !== 'desc') {
-            throw new MissingParameterError(undefined, 'Sort query is required');
+//productFilterSort
+const productController = {
+    productFilterSort: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const { title = '', sortBy = '', sort = 'desc' } = req.query as { title?: string, sortBy?: string, sort?: string };
+    
+        // Перевірка значень sort та sortBy
+        const allowedSortBy = ['price', 'createdAt'];
+        const allowedSortValues = ['asc', 'desc'];
+    
+        if (!allowedSortValues.includes(sort)) {
+            throw new MissingParameterError(undefined, 'Invalid sort value. Allowed: "asc" or "desc".');
         }
-
-        const products = await productService.searchForName(title, sort);
+    
+        // Перевіряємо, чи всі параметри у sortBy є допустимими
+        if (sortBy) {
+            const sortFields = sortBy.split(',');
+            if (!sortFields.every(field => allowedSortBy.includes(field))) {
+                throw new MissingParameterError(undefined, 'Invalid sortBy value. Allowed: "price", "createdAt" or both.');
+            }
+        }
+    
+        // Виклик сервісу з параметрами
+        const products = await productService.productFilterSort(title, sortBy, sort);
         res.json(products);
     }),
 
-    sortForPrice: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { sort } = req.query;
-        if (!sort || (sort !== "asc" && sort !== "desc")) {
-            throw new MissingParameterError(undefined, "Sort query is required and must be 'asc' or 'desc'");
-        }
-
-        const products = await productService.sortForPrice(sort);
-        res.json(products);
-    }),
 
     createProduct: asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const {
@@ -47,4 +52,4 @@ const productOptController = {
     })
 };
 
-export default productOptController;
+export default productController;
