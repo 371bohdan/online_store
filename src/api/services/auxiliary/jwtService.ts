@@ -5,8 +5,8 @@ import { JwtTokenTypes } from "../../models/enums/jwtTokenTypesEnum";
 import AuthorizationError from "../../errors/auth/AuthorizationError";
 import { Response } from "express";
 import ms from "ms";
-import { IUser } from "../../models/users";
-import { getUserByField } from "../userService";
+import User, { IUser } from "../../models/users";
+import { getItemByField } from "../genericCrudService";
 
 export const jwtService = {
     /**
@@ -96,7 +96,7 @@ export const jwtService = {
     getUserFromBearerToken: async (bearerToken: string | undefined): Promise<IUser> => {
         const token = jwtService.getJwtTokenWithoutAuthScheme(bearerToken);
         const userId = jwtService.getUserIdFromJwtToken(token, JwtTokenTypes.ACCESS);
-        return await getUserByField('_id', userId);
+        return await getItemByField(User, '_id', userId);
     }
 }
 

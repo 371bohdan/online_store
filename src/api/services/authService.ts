@@ -8,16 +8,15 @@ import { ENV } from "../../config/dotenv/env";
 import NotFoundError from "../errors/general/NotFoundError";
 import { randomUUID } from "crypto";
 import { console } from "inspector";
-import { getUserByField } from "./userService";
 import { jwtService } from "./auxiliary/jwtService";
 import { JwtTokenTypes } from "../models/enums/jwtTokenTypesEnum";
 import { HydratedDocument } from "mongoose";
 import { UserRoles } from "../models/enums/userRolesEnum";
-import ValidationError from "../errors/validation/ValidationError";
 import ms from "ms";
 import { ActivationCodeExpiredError } from "../errors/auth/ActivationCodeExpiredError";
 import { ErrorResponse, getErrorResponse } from "../errors/ErrorResponse";
 import { StatusCodes } from "http-status-codes";
+import { getItemByField } from "./genericCrudService";
 
 const VERIFY_EMAIL_URI: string = ENV.HOST_URI + '/api/auth/verifyEmail';
 const RECOVER_PASSWORD_URI: string = ENV.HOST_URI + '/api/auth/passwordRecovery';
@@ -91,7 +90,7 @@ export const authService = {
         try {
             await ensureMailCodeIsActive(recoveryCode, 'recovery');
 
-            const user = await getUserByField('recoveryCode', recoveryCode);
+            const user = await getItemByField(User, 'recoveryCode', recoveryCode);
             Object.assign(user, { password, recoveryCode: null, verificationCode: null, isVerified: true, recoveryCodeCreatedAt: null })
             await user.save();
 
@@ -200,11 +199,11 @@ export async function initialiseOwnerAccount(): Promise<void> {
 async function ensureMailCodeIsActive(code: string, type: 'verification' | 'recovery'): Promise<void> {
     let createdAt;
     if (type === 'verification') {
-        const user = await getUserByField('verificationCode', code);
+        const user = await getItemByField(User, 'verificationCode', code);
         createdAt = user.verificationCodeCreatedAt;
 
     } else {
-        const user = await getUserByField('recoveryCode', code);
+        const user = await getItemByField(User, 'recoveryCode', code);
         createdAt = user.recoveryCodeCreatedAt;
     }
 

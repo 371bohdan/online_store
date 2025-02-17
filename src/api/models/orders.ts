@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import mongooseToSwagger from "mongoose-to-swagger";
+import { OrderStatuses } from "./enums/orderStatusesEnum";
 
 export interface IOrder extends Document {
     userId?: Types.ObjectId; // Can be null for unregistered users
@@ -10,6 +11,7 @@ export interface IOrder extends Document {
     telephone: string;
     email: string;
     amountOrder: number; // Calculated: Delivery.price + Cart.totalPrice
+    status: string
 }
 
 const OrderSchema = new Schema<IOrder>(
@@ -29,6 +31,11 @@ const OrderSchema = new Schema<IOrder>(
                 message: "Amount must be greater than or equal to 0",
             },
         },
+        status: {
+            type: String,
+            enum: OrderStatuses,
+            default: OrderStatuses.PROCESSING
+        }
     }
 );
 

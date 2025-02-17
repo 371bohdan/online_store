@@ -49,6 +49,23 @@ const router: express.Router = express.Router();
  */
 router.patch('/:id/role', requireAuth, requireOwnerRole, userController.changeRole);
 
+/**
+ * @swagger
+ * /api/users/roles:
+ *  get:
+ *      tags:
+ *          - users API
+ *      summary: Get all available user roles
+ *      security:
+ *       - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: Success
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/roles', requireAuth, requireOwnerRole, userController.getAllRoles);
+
 router.use(genericCrudRoute(User as Model<IUser>, "users", ['get', 'post', 'put', 'delete']));
 router.use(errorHandler);
 export default router;

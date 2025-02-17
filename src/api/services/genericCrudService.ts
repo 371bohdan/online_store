@@ -24,12 +24,12 @@ export const genericCrudService = <T extends Document>(Model: Model<T>) => ({
 
     update: async (itemId: string, body: Array<String>): Promise<HydratedDocument<T> | null> => {
         // const item = genericCrudService(Model).getById(itemId);
-        await ensureItemExists(itemId, Model);
+        await ensureItemExists(Model, '_id', itemId);
         return await Model.findOneAndUpdate({ _id: itemId }, body, { returnDocument: 'after' });
     },
 
     removeById: async (itemId: string): Promise<string> => {
-        await ensureItemExists(itemId, Model);
+        await ensureItemExists(Model, '_id', itemId);
         await Model.findByIdAndDelete(itemId);
         return `${Model.modelName} with id '${itemId}' was successfully removed.`
     },
@@ -59,12 +59,24 @@ function getFilteredData(modelName: string, body: any): Object {
 }
 
 /**
- * Checks if an item with the given ID exists 
- * @param itemId The ID of an item to be checked
- * @throws The NotFoundError if an item with the given ID doesn't exist
+ * Returns a model item found by the given field and value. Throws a NotFoundError exception if the item doesn't exist with provided field and value (from 'ensureItemExists' method)
+ * @param model The model in which the search is performed
+ * @param field The field from the model scheme
+ * @param value The value of the given field
  */
-async function ensureItemExists(itemId: string, model: Model<any>): Promise<void> {
-    if (!await model.exists({ _id: itemId })) {
+export async function getItemByField<T>(model: Model<T>, field: keyof T, value: any): Promise<T> {
+    await ensureItemExists(model, field, value);
+    return await model.findOne({ [field]: value } as Record<string, any>) as T;
+}
+
+/**
+ * Checks if an item exists with the given field and value
+ * @param model The model in which the search is performed
+ * @param field The field from the model scheme
+ * @param value The value of the given field
+ */
+export async function ensureItemExists<T>(model: Model<T>, field: keyof T, value: any): Promise<void> {
+    if (!await model.exists({ [field]: value } as Partial<T>)) {
         throw new NotFoundError(Model.modelName);
     }
 }

@@ -2,10 +2,12 @@ import NotFoundError from "../errors/general/NotFoundError";
 import { UserRoles } from "../models/enums/userRolesEnum";
 import User, { IUser } from "../models/users";
 import BadRequestError from "../errors/general/BadRequestError";
+import { ensureItemExists } from "./genericCrudService";
 
 export const userService = {
+
     changeRole: async (userId: string, role: UserRoles): Promise<IUser> => {
-        await ensureUserExists('_id', userId);
+        await ensureItemExists(User, '_id', userId);
         const user = await User.findOne({ _id: userId }) as IUser;
 
         if (user.role === UserRoles.OWNER) {
@@ -22,26 +24,8 @@ export const userService = {
 
         return await User.findOneAndUpdate({ _id: user }, { role }, { new: true }) as IUser;
     },
-}
 
-/**
- * Returns a user found by the given field and value. Throws NotFoundError exception if user with provided field and value doesn't exist (from 'ensureUserExists' method)
- * @param field The field from the 'IUser' interface
- * @param value The value of the given field
- */
-export async function getUserByField(field: keyof IUser, value: any): Promise<IUser> {
-    await ensureUserExists(field, value);
-    return await User.findOne({ [field]: value }) as IUser;
-}
-
-/**
- * Checks if user exists in database
- * @param field The field from the 'IUser' interface
- * @param value The value of the given field
- * @throws NotFoundError exception if user with provided field and value doesn't exist
- */
-export async function ensureUserExists(field: keyof IUser, value: any) {
-    if (!await User.exists({ [field]: value })) {
-        throw new NotFoundError(User.modelName);
+    getAllRoles: (): Array<UserRoles> => {
+        return Object.values(UserRoles);
     }
 }
