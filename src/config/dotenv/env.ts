@@ -62,6 +62,7 @@ const envSchema = zod.object({
         .regex(/^\d+$/, 'Must be a number')
         .transform((val) => Number(val)),
 
+    LOG_LEVEL: zod.string(),
 });
 
 type Env = zod.infer<typeof envSchema>;

@@ -74,6 +74,7 @@ export async function getItemByField<T>(model: Model<T>, field: keyof T, value: 
  * @param model The model in which the search is performed
  * @param field The field from the model scheme
  * @param value The value of the given field
+ * @throws NotFoundError exception if item doesn't exist
  */
 export async function ensureItemExists<T>(model: Model<T>, field: keyof T, value: any): Promise<void> {
     if (!await model.exists({ [field]: value } as Partial<T>)) {

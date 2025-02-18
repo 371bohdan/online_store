@@ -7,7 +7,6 @@ import mailController from "../../config/mail/mailController";
 import { ENV } from "../../config/dotenv/env";
 import NotFoundError from "../errors/general/NotFoundError";
 import { randomUUID } from "crypto";
-import { console } from "inspector";
 import { jwtService } from "./auxiliary/jwtService";
 import { JwtTokenTypes } from "../models/enums/jwtTokenTypesEnum";
 import { HydratedDocument } from "mongoose";
@@ -16,11 +15,15 @@ import ms from "ms";
 import { ActivationCodeExpiredError } from "../errors/auth/ActivationCodeExpiredError";
 import { ErrorResponse, getErrorResponse } from "../errors/ErrorResponse";
 import { StatusCodes } from "http-status-codes";
-import { getItemByField } from "./genericCrudService";
+import { ensureItemExists, getItemByField } from "./genericCrudService";
+import { logger } from "../../config/winston/winstonConfig";
 
 const VERIFY_EMAIL_URI: string = ENV.HOST_URI + '/api/auth/verifyEmail';
 const RECOVER_PASSWORD_URI: string = ENV.HOST_URI + '/api/auth/passwordRecovery';
 const MESSAGE_TO_INTERACT_WITH_EMAIL: string = 'Please, check your email for the next steps!';
+const AUTH_LOGGER = logger.child({
+    service: 'auth-service'
+});
 
 export const authService = {
     signUp: async (email: string, password: string): Promise<string> => {
@@ -79,8 +82,19 @@ export const authService = {
             mailController.sendMail(email, 'Lumen Online Store: password recovery', `You need to click on the link to recover your account: ${RECOVER_PASSWORD_URI}/${recoveryCode}`);
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
 
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            if (error instanceof NotFoundError) {
+                AUTH_LOGGER.warn(`Failed due to non-existent email: ${email}`, {
+                    method: 'passwordRecovery'
+                });
+
+            } else {
+                AUTH_LOGGER.warn(error.message, {
+                    method: 'passwordRecovery',
+                    stack: error.stack
+                });
+            }
+
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
         }
     },
@@ -99,10 +113,25 @@ export const authService = {
 
         } catch (error: any) {
             if (error.message.startsWith('User validation failed') || error instanceof ActivationCodeExpiredError) {
+                AUTH_LOGGER.warn(error.message, {
+                    method: 'confirmPasswordRecovery'
+                });
+
                 return getErrorResponse(StatusCodes.BAD_REQUEST, error.message);
             }
 
-            console.log(error);
+            if (error instanceof NotFoundError) {
+                AUTH_LOGGER.warn(`Failed due to non-existent recovery code: ${recoveryCode}`, {
+                    method: 'confirmPasswordRecovery'
+                });
+
+            } else {
+                AUTH_LOGGER.warn(error.message, {
+                    method: 'confirmPasswordRecovery',
+                    stack: error.stack
+                });
+            }
+
             return message;
         }
     },
@@ -110,6 +139,7 @@ export const authService = {
     verifyEmail: async (verificationCode: string, res: Response): Promise<string | ErrorResponse> => {
         const message = 'Successfully verified';
         try {
+            await ensureItemExists(User, 'verificationCode', verificationCode);
             await ensureMailCodeIsActive(verificationCode, 'verification');
             const user = await User.findOneAndUpdate({ verificationCode }, { verificationCode: null, isVerified: true, verificationCodeCreatedAt: null }) as IUser;
 
@@ -122,24 +152,52 @@ export const authService = {
 
         } catch (error: any) {
             if (error instanceof ActivationCodeExpiredError) {
+                AUTH_LOGGER.warn(`Failed because the verification code has expired: ${verificationCode}`, {
+                    method: 'verifyEmail'
+                });
+
                 return getErrorResponse(error.statusCode, error.message);
             }
 
-            console.log(error);
+            if (error instanceof NotFoundError) {
+                AUTH_LOGGER.warn(`Failed due to non-existent verification code: ${verificationCode}`, {
+                    method: 'verifyEmail'
+                });
+
+            } else {
+                AUTH_LOGGER.warn(error.message, {
+                    method: 'verifyEmail',
+                    stack: error.stack
+                });
+            }
+
             return message;
         }
     },
 
     resendVerificationLetter: async (email: string): Promise<String> => {
         try {
+            await ensureItemExists(User, 'email', email);
             const newVerificationCode = randomUUID();
             await User.findOneAndUpdate({ email }, { verificationCode: newVerificationCode, verificationCodeCreatedAt: new Date() });
 
             mailController.sendMail(email, 'Account verification in the Lumen online store',
                 `Link to verify your account: ${VERIFY_EMAIL_URI}/${newVerificationCode}.  If you didn't send the request to verify your account, ignore this letter.`)
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
-        } catch (error) {
-            console.log(error);
+
+        } catch (error: any) {
+            if (error instanceof NotFoundError) {
+                AUTH_LOGGER.warn(`Failed due to non-existent email: ${email}`, {
+                    method: 'verifyEmail'
+                });
+
+            } else {
+                AUTH_LOGGER.warn(error.message, {
+                    method: 'verifyEmail',
+                    stack: error.stack
+                });
+            }
+
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
         }
     }

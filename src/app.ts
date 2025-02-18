@@ -22,6 +22,10 @@ app.use(cookieParser());
 
 app.use(express.json());
 
+//logging
+import { morganMiddleware } from './config/morgan/morganMiddleware';
+app.use(morganMiddleware);
+
 //cors
 app.use(cors({
     origin: 'http://localhost:5173'
