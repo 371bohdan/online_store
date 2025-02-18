@@ -56,8 +56,13 @@ const envSchema = zod.object({
         .regex(/^\d+$/, 'Must be a number')
         .transform((val) => Number(val)),
 
-    OWNER_EMAIL: zod.string().email('Invalid email format')
+    OWNER_EMAIL: zod.string().email('Invalid email format'),
 
+    MAIL_CODES_EXPIRY_TIME: zod.string()
+        .regex(/^\d+$/, 'Must be a number')
+        .transform((val) => Number(val)),
+
+    LOG_LEVEL: zod.string(),
 });
 
 type Env = zod.infer<typeof envSchema>;

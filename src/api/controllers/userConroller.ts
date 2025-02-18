@@ -9,4 +9,9 @@ export const userController = {
         const updatedUser = await userService.changeRole(id, role);
         res.json(updatedUser);
     }),
+
+    getAllRoles: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const roles = userService.getAllRoles();
+        res.json({ roles });
+    })
 }

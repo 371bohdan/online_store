@@ -1,4 +1,4 @@
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Document, ModifyResult } from "mongoose";
 import Order, { IOrder } from "../models/orders";
 import Product, { IProduct } from "../models/products";
 import Cart from "../models/carts";
@@ -6,6 +6,10 @@ import mailController from "../../config/mail/mailController";
 import UnauthorizedError from "../errors/auth/UnauthorizedError";
 import NotFoundError from "../errors/general/NotFoundError";
 import { OrderItem } from "../types/OrderTypes";
+import { OrderStatuses } from "../models/enums/orderStatusesEnum";
+import { ensureItemExists, getItemByField } from "./genericCrudService";
+import BadRequestError from "../errors/general/BadRequestError";
+import mailController from "../../config/mail/mailController";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, user: any): Promise<HydratedDocument<IOrder>> => {

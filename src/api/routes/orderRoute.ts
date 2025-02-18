@@ -4,6 +4,8 @@ import errorHandler from "../middleware/errors/errorHandler";
 import genericCrudRoute from "./genericCrudRoute";
 import Order, { IOrder } from "../models/orders";
 import { Model } from "mongoose";
+import requireAuth from "../middleware/auth/requireAuth";
+import requireAdminOrOwnerRole from "../middleware/auth/requireAdminOrOwnerRole";
 
 const router = express.Router();
 
@@ -118,8 +120,121 @@ const router = express.Router();
  *                 error:
  *                   type: object
  */
-
 router.post("/create", orderController.createOrder);
+
+/**
+ * @swagger
+ * /api/orders/statuses:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: Get all available order statuses
+ *      security:
+ *       - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: Success
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/statuses', requireAuth, orderController.getAllStatuses);
+
+/**
+ * @swagger
+ * /api/orders/{id}/status:
+ *  patch:
+ *      tags:
+ *          - orders API
+ *      summary: Change the status of order
+ *      security:
+ *       - bearerAuth: []
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Enter an order ID, whose status you want to change
+ *      requestBody:
+ *          required: true
+ *          description: | 
+ *              <strong>Status:</strong> 'processing', 'accepted', 'sent', 'received', 'canceled' <br>
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          status:
+ *                              type: string
+ *                              example: processing
+ *                  required:
+ *                      - status
+ *      responses:
+ *          200:
+ *              description: Success
+ *          400:
+ *              description: The body doesn't match the required properties
+ *          500:
+ *              description: Internal server error
+ */
+router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
+
+/**
+ * @swagger
+ * /api/orders/statuses:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: Get all available order statuses
+ *      security:
+ *       - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: Success
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/statuses', requireAuth, orderController.getAllStatuses);
+
+/**
+ * @swagger
+ * /api/orders/{id}/status:
+ *  patch:
+ *      tags:
+ *          - orders API
+ *      summary: Change the status of order
+ *      security:
+ *       - bearerAuth: []
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Enter an order ID, whose status you want to change
+ *      requestBody:
+ *          required: true
+ *          description: | 
+ *              <strong>Status:</strong> 'processing', 'accepted', 'sent', 'received', 'canceled' <br>
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          status:
+ *                              type: string
+ *                              example: processing
+ *                  required:
+ *                      - status
+ *      responses:
+ *          200:
+ *              description: Success
+ *          400:
+ *              description: The body doesn't match the required properties
+ *          500:
+ *              description: Internal server error
+ */
+router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
 
 router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['put', 'delete']));
 router.use(errorHandler);
