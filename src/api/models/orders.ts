@@ -15,7 +15,6 @@ export interface IOrder extends Document {
         quantity: number;
         price: number;
     }[];
-    amountOrder: number; // Calculated: Delivery.price + Cart.totalPrice
     status: string
 }
 
@@ -42,23 +41,6 @@ const OrderSchema = new Schema<IOrder>(
         }
     }
 )
-
-// Middleware для автоматичного обчислення `amountOrder`
-OrderSchema.pre<IOrder>("save", async function (next) {
-    try {
-        const delivery = await mongoose.model("Delivery").findById(this.deliveryCompanyId);
-        const cart = await mongoose.model("Cart").findById(this.cartId);
-
-        if (!delivery || !cart) {
-            throw new Error("Invalid deliveryCompanyId or cartId");
-        }
-
-        this.amountOrder = delivery.price + cart.totalPrice;
-        next();
-    } catch (error) {
-        next(error as mongoose.CallbackError);
-    }
-});
 
 const Order = mongoose.model<IOrder>("Order", OrderSchema);
 export default Order;
