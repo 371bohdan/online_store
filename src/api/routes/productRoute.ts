@@ -30,14 +30,14 @@ const router: express.Router = express.Router();
  *         name: sortPrice
  *         schema:
  *           type: string
- *           enum: [asc, desc]
+ *           enum: ["asc", "desc", null]
  *         required: false
  *         description: Сортування за ціною (asc - зростання, desc - спадання)
  *       - in: query
  *         name: sortDate
  *         schema:
  *           type: string
- *           enum: [asc, desc]
+ *           enum: ["asc", "desc", null]
  *         required: false
  *         description: Сортування за датою створення (asc - старіші перші, desc - новіші перші)
  *     responses:
