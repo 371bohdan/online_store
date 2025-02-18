@@ -8,29 +8,28 @@ import ApiError from "../errors/ApiError";
 import { SortOrder } from "mongoose";
 //productFilterSort
 const productController = {
-    productFilterSort: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { title = '', sortPrice = 'asc', sortDate = 'desc' } = req.query as { 
-            title?: string, 
-            sortPrice?: SortOrder, 
-            sortDate?: SortOrder 
-        };
+        productFilterSort: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+            let { title = '', sortPrice, sortDate } = req.query as { 
+                title?: string, 
+                sortPrice?: SortOrder, 
+                sortDate?: SortOrder 
+            };
     
-        // Перевіряємо, чи значення сортування правильні
-        const allowedSortValues: SortOrder[] = ['asc', 'desc', 1, -1];
-
-        if (!allowedSortValues.includes(sortPrice)) {
-            throw new Error('Invalid sortPrice value. Allowed: "asc", "desc", 1, -1.');
-        }
-
-        if (!allowedSortValues.includes(sortDate)) {
-            throw new Error('Invalid sortDate value. Allowed: "asc", "desc", 1, -1.');
-        }
-
-        const products = await productService.productFilterSort(title, sortPrice, sortDate);
-        
-        res.json(products);
-    }),
-
+            // Перевірка допустимих значень
+            const allowedSortValues: SortOrder[] = ['asc', 'desc', 1, -1];
+    
+            if (sortPrice && !allowedSortValues.includes(sortPrice)) {
+                throw new Error('Invalid sortPrice value. Allowed: "asc", "desc", 1, -1.');
+            }
+    
+            if (sortDate && !allowedSortValues.includes(sortDate)) {
+                throw new Error('Invalid sortDate value. Allowed: "asc", "desc", 1, -1.');
+            }
+    
+            const products = await productService.productFilterSort(title, sortPrice, sortDate);
+            
+            res.json(products);
+        }),
 
     createProduct: asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const {
