@@ -48,7 +48,7 @@ app.use('/api/products', productRoute);
 
 //devlivery crud routes
 import Delivery, { IDelivery } from './api/models/deliveries';
-const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['get', 'post', 'put', 'delete']);
+const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['post', 'put', 'delete']);
 app.use('/api/deliveries', deviveryRoute);
 
 //order routes

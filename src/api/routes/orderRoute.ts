@@ -23,9 +23,6 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               cartId:
- *                 type: string
- *                 description: ID of your cart
  *               deliveryCompanyId:
  *                 type: string
  *                 description: Delivery company including price and delivery method
@@ -41,13 +38,24 @@ const router = express.Router();
  *               email:
  *                 type: string
  *                 description: Client's email address
+ *               products:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     productId:
+ *                       type: string
+ *                       description: Product ID
+ *                     quantity:
+ *                       type: integer
+ *                       description: Quantity of the product
  *             required:
- *               - cartId
  *               - deliveryCompanyId
  *               - firstName
  *               - lastName
  *               - telephone
  *               - email
+ *               - products
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -65,9 +73,6 @@ const router = express.Router();
  *                     userId:
  *                       type: string
  *                       description: User ID associated with the order
- *                     cartId:
- *                       type: string
- *                       description: ID of the cart used to create the order
  *                     deliveryCompanyId:
  *                       type: string
  *                       description: Selected delivery company ID
@@ -174,7 +179,64 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  */
 router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
 
-router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['get', 'post', 'put', 'delete']));
+/**
+ * @swagger
+ * /api/orders/statuses:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: Get all available order statuses
+ *      security:
+ *       - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: Success
+ *          500:
+ *              description: Internal server error
+ */
+router.get('/statuses', requireAuth, orderController.getAllStatuses);
+
+/**
+ * @swagger
+ * /api/orders/{id}/status:
+ *  patch:
+ *      tags:
+ *          - orders API
+ *      summary: Change the status of order
+ *      security:
+ *       - bearerAuth: []
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            required: true
+ *            schema:
+ *              type: string
+ *            description: Enter an order ID, whose status you want to change
+ *      requestBody:
+ *          required: true
+ *          description: | 
+ *              <strong>Status:</strong> 'processing', 'accepted', 'sent', 'received', 'canceled' <br>
+ *          content: 
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          status:
+ *                              type: string
+ *                              example: processing
+ *                  required:
+ *                      - status
+ *      responses:
+ *          200:
+ *              description: Success
+ *          400:
+ *              description: The body doesn't match the required properties
+ *          500:
+ *              description: Internal server error
+ */
+router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
+
+router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['put', 'delete']));
 router.use(errorHandler);
 
 export default router;

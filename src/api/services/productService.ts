@@ -2,40 +2,51 @@ import { HydratedDocument } from 'mongoose';
 import Product, { IProduct } from "../models/products";
 import { imageService } from './auxiliary/imageService';
 import { CollectionsEnum } from '../models/enums/collectionsEnum';
+import { SortOrder } from 'mongoose';
 
 export const productService = {
-    searchForName: async (title: string, sort: string): Promise<Array<HydratedDocument<IProduct>>> => {
-        let query = Product.find({
-            title: new RegExp(`^${title}`, "i"), // ^ - початок рядка
-        });
+    productFilterSort: async (    title: string = '', 
+        sortPrice: SortOrder = 'asc', 
+        sortDate: SortOrder = 'desc'): Promise<Array<HydratedDocument<IProduct>>> => {
 
-        if (sort) {
-            query = query.sort({
-                price: sort === "asc" ? 1 : -1,
-            });
-        }
+            let query = Product.find();
 
-        return await query;
+            // Фільтрація за title
+            if (title) {
+                query = query.where('title').regex(new RegExp(title, 'i'));
+            }
+        
+            // Виправлене сортування
+            const sortConditions: Record<string, SortOrder> = {
+                price: sortPrice,
+                createdAt: sortDate
+            };
+        
+            query = query.sort(sortConditions);
+            return await query;
     },
+ 
 
-    sortForPrice: async (sort: string): Promise<Array<HydratedDocument<IProduct>>> => {
-        return await Product.find().sort({
-            price: sort === "asc" ? 1 : -1, // 1 - за зростанням, -1 - за спаданням
-        });
-    },
-
-    createProduct: async (title: string, price: number, describe: string, collections: CollectionsEnum,
+    createProduct: async (title: string, price: number, type_candle: string, size: number,
+        aroma: string, appointment: string, burning_time: string, short_describe: string, 
+        color: string, material: string, shape: string, features: string, gift_packaging: boolean,
         stock: number, file: Express.Multer.File): Promise<HydratedDocument<IProduct>> => {
         const imageUrl = await imageService.uploadFile(file);
-
-        let parsedDescribe = describe;
-        parsedDescribe = JSON.parse(describe);
 
         const data = new Product({
             title,
             price,
-            describe: parsedDescribe,
-            collections,
+            type_candle,
+            size,
+            aroma,
+            appointment,
+            burning_time,
+            short_describe,
+            color,
+            material,
+            shape,
+            features,
+            gift_packaging,
             stock,
             image: imageUrl
         });

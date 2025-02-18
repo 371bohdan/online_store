@@ -3,13 +3,18 @@ import mongooseToSwagger from "mongoose-to-swagger";
 import { OrderStatuses } from "./enums/orderStatusesEnum";
 
 export interface IOrder extends Document {
-    userId?: Types.ObjectId; // Can be null for unregistered users
-    cartId: Types.ObjectId; // Reference to a cart
-    deliveryCompanyId: Types.ObjectId; // Reference to Delivery
+    userId?: Types.ObjectId;
+    deliveryCompanyId: Types.ObjectId;
     firstName: string;
     lastName: string;
     telephone: string;
     email: string;
+    amountOrder: number;
+    products: {
+        productId: Types.ObjectId;
+        quantity: number;
+        price: number;
+    }[];
     amountOrder: number; // Calculated: Delivery.price + Cart.totalPrice
     status: string
 }
@@ -17,27 +22,26 @@ export interface IOrder extends Document {
 const OrderSchema = new Schema<IOrder>(
     {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: false },
-        cartId: { type: Schema.Types.ObjectId, ref: "Cart", required: true },
         deliveryCompanyId: { type: Schema.Types.ObjectId, ref: "Delivery", required: true },
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
         telephone: { type: String, required: true },
         email: { type: String, required: true },
-        amountOrder: {
-            type: Number,
-            default: 0,
-            validate: {
-                validator: (value: number) => value >= 0,
-                message: "Amount must be greater than or equal to 0",
-            },
-        },
+        amountOrder: { type: Number, required: true },
+        products: [
+            {
+                productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+                quantity: { type: Number, required: true },
+                price: { type: Number, required: true }
+            }
+        ],
         status: {
             type: String,
             enum: OrderStatuses,
             default: OrderStatuses.PROCESSING
         }
     }
-);
+)
 
 // Middleware для автоматичного обчислення `amountOrder`
 OrderSchema.pre<IOrder>("save", async function (next) {

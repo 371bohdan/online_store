@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
 import { orderService } from "../services/orderService";
 import asyncHandler from "../middleware/errors/asyncHandler";
+// import { AuthRequest } from "../types/AuthRequest"// Імпортуй новий тип
+import { IOrder } from "../models/orders"
 
 const orderController = {
     createOrder: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const order = await orderService.createOrder(req.body);
-        res.status(201).json({ message: 'Order created successfully', order });
+        const user = req.body.user;
+        const order = await orderService.createOrder(req.body, user);
+        res.status(201).json(order);
     }),
 
     getAllStatuses: asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -19,6 +22,6 @@ const orderController = {
         const updatedOrder = await orderService.changeStatus(orderId, newStatus);
         res.json(updatedOrder);
     })
-}
+};
 
 export default orderController;
