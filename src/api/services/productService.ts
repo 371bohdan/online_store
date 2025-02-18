@@ -1,29 +1,45 @@
 import { HydratedDocument } from 'mongoose';
 import Product, { IProduct } from "../models/products";
 import { imageService } from './auxiliary/imageService';
-import { CollectionsEnum } from '../models/enums/collectionsEnum';
 import { SortOrder } from 'mongoose';
 
 export const productService = {
-    productFilterSort: async (    title: string = '', 
-        sortPrice: SortOrder = 'asc', 
-        sortDate: SortOrder = 'desc'): Promise<Array<HydratedDocument<IProduct>>> => {
-
-            let query = Product.find();
-
-            // Фільтрація за title
-            if (title) {
-                query = query.where('title').regex(new RegExp(title, 'i'));
-            }
+    productFilterSort: async (
+        title: string = '',
+        sortPrice?: SortOrder,
+        sortDate?: SortOrder
+    ): Promise<Array<HydratedDocument<IProduct>>> => {
         
-            // Виправлене сортування
-            const sortConditions: Record<string, SortOrder> = {
-                price: sortPrice,
-                createdAt: sortDate
-            };
-        
+        let query = Product.find();
+    
+        // Фільтрація за title
+        if (title) {
+            query = query.where('title').regex(new RegExp(title, 'i'));
+        }
+    
+        // Обнуляємо один із параметрів, якщо інший вибрано
+        if (sortPrice) {
+            sortDate = undefined;
+        } else if (sortDate) {
+            sortPrice = undefined;
+        }
+    
+        // Логіка сортування
+        let sortConditions: Record<string, SortOrder> = {};
+    
+        if (sortPrice) {
+            sortConditions.price = sortPrice;
+        }
+    
+        if (sortDate) {
+            sortConditions.createdAt = sortDate;
+        }
+    
+        if (Object.keys(sortConditions).length > 0) {
             query = query.sort(sortConditions);
-            return await query;
+        }
+    
+        return await query;
     },
  
 
