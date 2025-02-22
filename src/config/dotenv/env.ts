@@ -63,6 +63,11 @@ const envSchema = zod.object({
         .transform((val) => Number(val)),
 
     LOG_LEVEL: zod.string(),
+
+    FRONT_PROD_URI: zod.string().refine(
+        (url) => url.startsWith('https://'),
+        'Invalid front prod URI'
+    ),
 });
 
 type Env = zod.infer<typeof envSchema>;
