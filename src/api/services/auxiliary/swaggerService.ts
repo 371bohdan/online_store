@@ -13,8 +13,6 @@ export const swaggerService = {
      */
     addDynamicSwaggerDocs: (modelName: string, methodsToSecure: Array<string>): void => {
         const modelNameSingular: string = modelName.substring(0, modelName.length - 1);
-        const swaggerSchema = swaggerService.getTheSwaggerSchema(modelName);
-        delete swaggerSchema.properties._id   //removing _id property for model Object
 
         // /api/${modelName}
         if (swaggerOptions.paths[`/api/${modelName}`]) {
@@ -25,7 +23,7 @@ export const swaggerService = {
             }
 
             if (!overriddenMethods.includes('post')) {
-                addSwaggerToPostMethod(modelName, modelNameSingular, swaggerSchema, methodsToSecure.includes('post'));
+                addSwaggerToPostMethod(modelName, modelNameSingular, methodsToSecure.includes('post'));
             }
 
             if (!overriddenMethods.includes('delete')) {
@@ -35,7 +33,7 @@ export const swaggerService = {
         } else {
             swaggerOptions.paths[`/api/${modelName}`] = {};
             addSwaggerToGetMethod(modelName, methodsToSecure.includes('get'));
-            addSwaggerToPostMethod(modelName, modelNameSingular, swaggerSchema, methodsToSecure.includes('post'));
+            addSwaggerToPostMethod(modelName, modelNameSingular, methodsToSecure.includes('post'));
             addSwaggerToDeleteMethod(modelName, methodsToSecure.includes('delete'));
         }
 
@@ -48,7 +46,7 @@ export const swaggerService = {
             }
 
             if (!overriddenMethods.includes('put')) {
-                addSwaggerToPutMethod(modelName, modelNameSingular, swaggerSchema, methodsToSecure.includes('put'));
+                addSwaggerToPutMethod(modelName, modelNameSingular, methodsToSecure.includes('put'));
             }
 
             if (!overriddenMethods.includes('delete')) {
@@ -58,7 +56,7 @@ export const swaggerService = {
         } else {
             swaggerOptions.paths[`/api/${modelName}/{id}`] = {};
             addSwaggerToGetByIdMethod(modelName, modelNameSingular, methodsToSecure.includes('get'));
-            addSwaggerToPutMethod(modelName, modelNameSingular, swaggerSchema, methodsToSecure.includes('put'));
+            addSwaggerToPutMethod(modelName, modelNameSingular, methodsToSecure.includes('put'));
             addSwaggerToDeleteByIdMethod(modelName, modelNameSingular, methodsToSecure.includes('delete'));
         }
     },
@@ -102,10 +100,22 @@ function addSwaggerToGetMethod(modelName: string, isSecured: boolean) {
         summary: `Get the list of ${modelName}`,
         responses: {
             200: {
-                description: "Success"
+                description: "Success",
+                content: {
+                    "application/json": {
+                        schema: swaggerService.getTheSwaggerSchema(modelName)
+                    }
+                }
             },
             500: {
-                description: 'Internal server error'
+                description: 'Internal server error',
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+                        }
+                    }
+                }
             }
         }
     }
@@ -126,10 +136,9 @@ function addSwaggerToGetMethod(modelName: string, isSecured: boolean) {
  * Adds a dynamic comment to the POST method (on the given model (by modelName))
  * @param modelName The name of a model
  * @param modelNameSingular The name of a model in the singular
- * @param swaggerSchema The schema showing which fields are required for a current model
  * @param isSecured The boolean property indicates whether this method must be protected or not
  */
-function addSwaggerToPostMethod(modelName: string, modelNameSingular: string, swaggerSchema: object, isSecured: boolean) {
+function addSwaggerToPostMethod(modelName: string, modelNameSingular: string, isSecured: boolean) {
     swaggerOptions.paths[`/api/${modelName}`]['post'] = {
         tags: [`${modelName} API`],
         summary: `Create the ${modelNameSingular}`,
@@ -137,19 +146,38 @@ function addSwaggerToPostMethod(modelName: string, modelNameSingular: string, sw
             required: true,
             content: {
                 "application/json": {
-                    schema: swaggerSchema
+                    schema: swaggerService.getTheSwaggerSchema(modelName)
                 }
             }
         },
         responses: {
             201: {
-                description: "Success"
+                description: "Success",
+                content: {
+                    "application/json": {
+                        schema: swaggerService.getTheSwaggerSchema(modelName)
+                    }
+                }
             },
             400: {
-                description: `The body doesn't match the ${modelNameSingular} schema`
+                description: `The body doesn't match the ${modelNameSingular} schema`,
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/BadRequest'
+                        }
+                    }
+                }
             },
             500: {
-                description: 'Internal server error'
+                description: 'Internal server error',
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+                        }
+                    }
+                }
             }
         }
     }
@@ -176,11 +204,18 @@ function addSwaggerToDeleteMethod(modelName: string, isSecured: boolean) {
         tags: [`${modelName} API`],
         summary: `Delete all ${modelName}`,
         responses: {
-            200: {
-                description: "Success"
+            204: {
+                description: "Success",
             },
             500: {
-                description: 'Internal server error'
+                description: 'Internal server error',
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+                        }
+                    }
+                }
             }
         }
     }
@@ -218,13 +253,43 @@ function addSwaggerToGetByIdMethod(modelName: string, modelNameSingular: string,
         }],
         responses: {
             200: {
-                description: "Success"
+                description: "Success",
+                content: {
+                    "application/json": {
+                        schema: swaggerService.getTheSwaggerSchema(modelName)
+                    }
+                }
             },
             404: {
-                description: `The ${modelNameSingular} not found`
+                description: `The ${modelNameSingular} not found`,
+                content: {
+                    'application/json': {
+                        schema: {
+                            allOf: [
+                                { $ref: "#/components/schemas/ErrorResponse/NotFound" },
+                                {
+                                    type: "object",
+                                    properties: {
+                                        message: {
+                                            type: "string",
+                                            example: `the ${modelNameSingular.toLowerCase()} not found.`,
+                                        },
+                                    },
+                                },
+                            ],
+                        }
+                    }
+                }
             },
             500: {
-                description: 'Internal server error'
+                description: 'Internal server error',
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+                        }
+                    }
+                }
             }
         }
 
@@ -246,10 +311,9 @@ function addSwaggerToGetByIdMethod(modelName: string, modelNameSingular: string,
  * Adds a dynamic comment to the PUT method (on the given model (by modelName))
  * @param modelName The name of a model
  * @param modelNameSingular The name of a model in the singular
- * @param swaggerSchema The schema showing which fields are required for a current model
  * @param isSecured The boolean property indicates whether this method must be protected or not
  */
-function addSwaggerToPutMethod(modelName: string, modelNameSingular: string, swaggerSchema: object, isSecured: boolean) {
+function addSwaggerToPutMethod(modelName: string, modelNameSingular: string, isSecured: boolean) {
     swaggerOptions.paths[`/api/${modelName}/{id}`]['put'] = {
         tags: [`${modelName} API`],
         summary: `Update the ${modelNameSingular} by id`,
@@ -266,22 +330,59 @@ function addSwaggerToPutMethod(modelName: string, modelNameSingular: string, swa
             required: true,
             content: {
                 "application/json": {
-                    schema: swaggerSchema
+                    schema: swaggerService.getTheSwaggerSchema(modelName)
                 }
             }
         },
         responses: {
             200: {
-                description: "Success"
+                description: "Success",
+                content: {
+                    "application/json": {
+                        schema: swaggerService.getTheSwaggerSchema(modelName)
+                    }
+                }
             },
             400: {
-                description: `The body doesn't match the ${modelNameSingular} schema`
+                description: `The body doesn't match the ${modelNameSingular} schema`,
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/BadRequest'
+                        }
+                    }
+                }
             },
             404: {
-                description: `The ${modelNameSingular} not found`
+                description: `The ${modelNameSingular} not found`,
+                content: {
+                    'application/json': {
+                        schema: {
+                            allOf: [
+                                { $ref: "#/components/schemas/ErrorResponse/NotFound" },
+                                {
+                                    type: "object",
+                                    properties: {
+                                        message: {
+                                            type: "string",
+                                            example: `The ${modelNameSingular.toLowerCase()} not found.`,
+                                        },
+                                    },
+                                },
+                            ],
+                        }
+                    }
+                }
             },
             500: {
-                description: 'Internal server error'
+                description: 'Internal server error',
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+                        }
+                    }
+                }
             }
         }
     }
@@ -322,10 +423,35 @@ function addSwaggerToDeleteByIdMethod(modelName: string, modelNameSingular: stri
                 description: "Success"
             },
             404: {
-                description: `The ${modelNameSingular} not found`
+                description: `The ${modelNameSingular} not found`,
+                content: {
+                    'application/json': {
+                        schema: {
+                            allOf: [
+                                { $ref: "#/components/schemas/ErrorResponse/NotFound" },
+                                {
+                                    type: "object",
+                                    properties: {
+                                        message: {
+                                            type: "string",
+                                            example: `The ${modelNameSingular.toLowerCase()} not found.`,
+                                        },
+                                    },
+                                },
+                            ],
+                        }
+                    }
+                }
             },
             500: {
-                description: 'Internal server error'
+                description: 'Internal server error',
+                content: {
+                    'application/json': {
+                        schema: {
+                            $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+                        }
+                    }
+                }
             }
         }
     }

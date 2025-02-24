@@ -1,7 +1,6 @@
 import express from "express";
 import productController from "../controllers/productController";
 import upload from "../middleware/upload/uploadMiddleweare";
-import errorHandler from "../middleware/errors/errorHandler";
 import Product, { IProduct } from "../models/products";
 import { Model } from "mongoose";
 import genericCrudRoute from "./genericCrudRoute";
@@ -63,8 +62,21 @@ const router: express.Router = express.Router();
  *                     type: string
  *       400:
  *         description: Невірні параметри сортування
+ *         content:
+ *              application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "Incorrect sort parameters"
  *       500:
  *         description: Внутрішня помилка сервера
+ *         content:
+ *              application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'     
  */
 
 router.get('/', productController.productFilterSort);
@@ -146,10 +158,27 @@ router.get('/', productController.productFilterSort);
  *       responses:
  *         201:
  *           description: Продукт успішно створений
+ *           content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Product'
  *         400:
  *           description: Некоректний запит або відсутній файл
+ *           content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "Incorrect request or missing file"
  *         500:
  *           description: Внутрішня помилка сервера
+ *           content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 
 router.post('/', upload.single('file'), productController.createProduct);

@@ -42,10 +42,38 @@ const router: express.Router = express.Router();
  *      responses:
  *          200:
  *              description: Success
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/User'
  *          400:
  *              description: The body doesn't match the required properties
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "Incorrect role name"
+ *          404:
+ *              descriptionn: The user not found
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "The user not found"
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.patch('/:id/role', requireAuth, requireOwnerRole, userController.changeRole);
 
@@ -61,8 +89,16 @@ router.patch('/:id/role', requireAuth, requireOwnerRole, userController.changeRo
  *      responses:
  *          200:
  *              description: Success
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Enum'
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.get('/roles', requireAuth, requireOwnerRole, userController.getAllRoles);
 

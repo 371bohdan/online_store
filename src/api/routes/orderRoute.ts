@@ -134,8 +134,16 @@ router.post("/create", orderController.createOrder);
  *      responses:
  *          200:
  *              description: Success
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Enum'
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.get('/statuses', requireAuth, orderController.getAllStatuses);
 
@@ -172,67 +180,38 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  *      responses:
  *          200:
  *              description: Success
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Order'
  *          400:
  *              description: The body doesn't match the required properties
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "Incorrect status"
+ *          404:
+ *              description: The order not found
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "The order not found."
  *          500:
  *              description: Internal server error
- */
-router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
-
-/**
- * @swagger
- * /api/orders/statuses:
- *  get:
- *      tags:
- *          - orders API
- *      summary: Get all available order statuses
- *      security:
- *       - bearerAuth: []
- *      responses:
- *          200:
- *              description: Success
- *          500:
- *              description: Internal server error
- */
-router.get('/statuses', requireAuth, orderController.getAllStatuses);
-
-/**
- * @swagger
- * /api/orders/{id}/status:
- *  patch:
- *      tags:
- *          - orders API
- *      summary: Change the status of order
- *      security:
- *       - bearerAuth: []
- *      parameters:
- *          - in: path
- *            name: id
- *            required: true
- *            schema:
- *              type: string
- *            description: Enter an order ID, whose status you want to change
- *      requestBody:
- *          required: true
- *          description: | 
- *              <strong>Status:</strong> 'processing', 'accepted', 'sent', 'received', 'canceled' <br>
- *          content: 
- *              application/json:
- *                  schema:
- *                      type: object
- *                      properties:
- *                          status:
- *                              type: string
- *                              example: processing
- *                  required:
- *                      - status
- *      responses:
- *          200:
- *              description: Success
- *          400:
- *              description: The body doesn't match the required properties
- *          500:
- *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
 

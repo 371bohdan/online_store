@@ -5,7 +5,7 @@ import { getErrorResponse } from "../../errors/ErrorResponse";
 import { logger } from "../../../config/winston/winstonConfig";
 
 const errorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
-    const message = error.message || 'Internal server error';
+    const message = error.message || 'Sorry, your request cannot be processed';
     let statusCode = error.statusCode || 500;
     logging(error, message);
 
