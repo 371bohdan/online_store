@@ -69,11 +69,7 @@ export const swaggerService = {
     getTheSwaggerSchema: (modelName: String) => {
         switch (modelName) {
             case 'users':
-                delete userSwaggerSchema.properties.recoveryCode;
-                delete userSwaggerSchema.properties.role;
-                delete userSwaggerSchema.properties.verificationCode;
-                delete userSwaggerSchema.properties.refreshToken;
-                delete userSwaggerSchema.properties.isVerified;
+                //   delete userSwaggerSchema.properties._id;
                 return userSwaggerSchema;
             case 'products':
                 return productSwaggerSchema;

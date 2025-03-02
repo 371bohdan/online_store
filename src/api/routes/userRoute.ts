@@ -45,7 +45,7 @@ const router: express.Router = express.Router();
  *              content:
  *               application/json:
  *                   schema:
- *                       $ref: '#/components/schemas/User'
+ *                       $ref: '#/components/schemas/Models/User'
  *          400:
  *              description: The body doesn't match the required properties
  *              content:

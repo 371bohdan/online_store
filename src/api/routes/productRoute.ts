@@ -161,7 +161,7 @@ router.get('/', productController.productFilterSort);
  *           content:
  *               application/json:
  *                   schema:
- *                       $ref: '#/components/schemas/Product'
+ *                       $ref: '#/components/schemas/Models/Product'
  *         400:
  *           description: Некоректний запит або відсутній файл
  *           content:

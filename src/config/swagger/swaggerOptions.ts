@@ -85,11 +85,37 @@ const options = {
                     }
                 },
 
-                Order: orderSwaggerSchema,
+                Models: {
+                    Order: orderSwaggerSchema,
 
-                Product: productSwaggerSchema,
+                    Product: productSwaggerSchema,
 
-                User: userSwaggerSchema
+                    User: userSwaggerSchema,
+                },
+
+                Dto: {
+                    UserDto: {
+                        type: 'object',
+                        properties: {
+                            email: { type: 'string', example: 'example@gmail.com' },
+                            firstName: { type: 'string', example: "FirstName" },
+                            lastName: { type: 'string', example: 'LastName' }
+                        }
+                    },
+
+                    OrderDto: {
+                        type: 'object',
+                        properties: {
+                            products: { type: 'array', example: '[]' },
+                            firstName: { type: 'string', example: "FirstName" },
+                            lastName: { type: 'string', example: 'LastName' },
+                            telephone: { type: 'string', example: "380123456789" },
+                            email: { type: 'string', example: 'example@gmail.com' },
+                            amountOrder: { type: 'number', example: "1000" },
+                            status: { type: 'string', example: 'processing' }
+                        }
+                    }
+                }
             }
         },
     },

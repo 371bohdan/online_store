@@ -183,7 +183,7 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  *              content:
  *               application/json:
  *                   schema:
- *                       $ref: '#/components/schemas/Order'
+ *                       $ref: '#/components/schemas/Models/Order'
  *          400:
  *              description: The body doesn't match the required properties
  *              content:

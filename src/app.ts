@@ -42,6 +42,9 @@ initialiseOwnerAccount();
 import userRoute from './api/routes/userRoute';
 app.use('/api/users', userRoute);
 
+import userSelfAccessRoute from './api/routes/userSelfAccessRoute';
+app.use('/api/user-self-access', userSelfAccessRoute);
+
 //product routes
 import productRoute from './api/routes/productRoute';
 app.use('/api/products', productRoute);
