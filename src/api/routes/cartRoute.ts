@@ -50,10 +50,27 @@ const router: express.Router = express.Router();
  *                   description: The updated cart object
  *       400:
  *         description: Bad request (missing or invalid parameters)
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/ErrorResponse/BadRequest'
  *       404:
  *         description: Cart not found
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                      allOf:
+ *                          - $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *                          - type: object
+ *                            properties:
+ *                              message:
+ *                                  example: "Cart not found"
  *       500:
  *         description: Internal server error
+ *         content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/add', cartController.addProduct);
 
