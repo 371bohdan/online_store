@@ -64,6 +64,11 @@ const envSchema = zod.object({
 
     LOG_LEVEL: zod.string(),
 
+    FRONT_PROD_URI: zod.string().refine(
+        (url) => url.startsWith('https://'),
+        'Invalid front prod URI'
+    ),
+
     LOGTAIL_TOKEN: zod.string().refine(
         (token) => token.length === 24,
         'Incorrect length of logtail token'
