@@ -33,10 +33,22 @@ const router: express.Router = express.Router();
  *      responses:
  *          200:
  *              description: Success
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Message'
  *          400:
- *              description: The body doesn't match the required properties
+ *              description: The body doesn't match the required properties or the email already used
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/BadRequest'
  *          500:
  *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/signUp', authController.signUp);
 
@@ -62,8 +74,16 @@ router.post('/signUp', authController.signUp);
  *      responses:
  *          200:
  *              description: Success or wrong email (decided to hide this error for more users safety)
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Message'
  *          500:
  *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/passwordRecovery', authController.passwordRecovery);
 
@@ -93,7 +113,12 @@ router.post('/passwordRecovery', authController.passwordRecovery);
  *              content:
  *                  application/json:
  *                      schema:
- *                          $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "The time of the given activation code has expired. Please, request a new one"
  *          500:
  *              description: Internal server error
  *              content:
@@ -125,8 +150,16 @@ router.get('/verifyEmail/:id', authController.verifyEmail);
  *      responses:
  *          200:
  *              description: Success or wrong email address (decided to hide this error for more users safety)
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Message'
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/resend-verification-letter', authController.resendVerificationLetter);
 
@@ -159,10 +192,27 @@ router.post('/resend-verification-letter', authController.resendVerificationLett
  *      responses:
  *          200:
  *              description: Success or wrong recovery code (decided to hide this error for more users safety)
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Message'
  *          400:
  *              description: The body doesn't match the required properties
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/BadRequest'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "password: invalid format"
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/confirm/:id', authController.confirmPasswordRecovery);
 
@@ -192,10 +242,27 @@ router.post('/confirm/:id', authController.confirmPasswordRecovery);
  *      responses:
  *          200:
  *              description: Success
- *          400:
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Token'
+ *          401:
  *              description: Incorrect incoming data (email or password).
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          allOf:
+ *                              - $ref: '#/components/schemas/ErrorResponse/Unauthorised'
+ *                              - type: object
+ *                                properties:
+ *                                  message:
+ *                                      example: "Incorrect incoming data (email or password)"
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/signIn', authController.signIn);
 
@@ -209,10 +276,22 @@ router.post('/signIn', authController.signIn);
  *      responses:
  *          200:
  *              description: Success
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/AuthApi/Token'
  *          401:
  *              description: Unauthorised
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/Unauthorised'
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/refresh', authController.refreshToken);
 
@@ -228,6 +307,10 @@ router.post('/refresh', authController.refreshToken);
  *              description: Success
  *          500:
  *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/logout', authController.logout);
 router.use(errorHandler);

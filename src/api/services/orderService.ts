@@ -3,12 +3,12 @@ import Order, { IOrder } from "../models/orders";
 import Product from "../models/products";
 import Cart from "../models/carts";
 import mailController from "../../config/mail/mailController";
-import UnauthorizedError from "../errors/auth/UnauthorizedError";
 import NotFoundError from "../errors/general/NotFoundError";
 import { OrderItem } from "../types/OrderTypes";
 import { OrderStatuses } from "../models/enums/orderStatusesEnum";
 import { ensureItemExists, getItemByField } from "./genericCrudService";
 import BadRequestError from "../errors/general/BadRequestError";
+import AuthorizationError from "../errors/auth/AuthorizationError";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, user: any): Promise<HydratedDocument<IOrder>> => {
@@ -22,7 +22,7 @@ export const orderService = {
         } = body;
 
         if (!user && !email) {
-            throw new UnauthorizedError("Email is required for non-registered users.");
+            throw new AuthorizationError("Email is required for non-registered users.");
         }
 
         let totalAmount = 0;
@@ -85,33 +85,44 @@ export const orderService = {
     getAllStatuses: (): Array<OrderStatuses> => {
         return Object.values(OrderStatuses);
     },
+
     changeStatus: async (orderId: string, newStatus: string): Promise<IOrder> => {
         const currentStatus = (await getItemByField(Order, '_id', orderId)).status;
+
         if (!Object.values(OrderStatuses).includes(newStatus as OrderStatuses)) {
             throw new BadRequestError("This status doesn't exist")
         }
+
         if (newStatus === OrderStatuses.CANCELED && currentStatus !== OrderStatuses.RECEIVED) {
             return setStatus(orderId, newStatus);
         }
+
         switch (currentStatus as OrderStatuses) {
             case OrderStatuses.PROCESSING:
                 if (newStatus === OrderStatuses.ACCEPTED) {
                     return setStatus(orderId, newStatus);
                 }
+
                 break;
+
             case OrderStatuses.ACCEPTED:
                 if (newStatus === OrderStatuses.SENT) {
                     return setStatus(orderId, newStatus);
                 }
+
                 break;
+
             case OrderStatuses.SENT:
                 if (newStatus === OrderStatuses.RECEIVED) {
                     return setStatus(orderId, newStatus);
                 }
+
                 break;
+
             default:
                 throw new BadRequestError("Sorry, the status of this order has already been completed");
         }
+
         throw new BadRequestError("Logic mismatch: sorry, you cannot set this status");
     }
 }
