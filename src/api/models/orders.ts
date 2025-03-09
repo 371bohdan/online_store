@@ -22,16 +22,40 @@ const OrderSchema = new Schema<IOrder>(
     {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: false },
         deliveryCompanyId: { type: Schema.Types.ObjectId, ref: "Delivery", required: true },
-        firstName: { type: String, required: true },
-        lastName: { type: String, required: true },
-        telephone: { type: String, required: true },
-        email: { type: String, required: true },
+
+        firstName: {
+            type: String,
+            required: true,
+            minlength: [3, 'must be at least 3 characters long'],
+            maxlength: [15, 'cannot exceed 15 characters'],
+        },
+
+        lastName: {
+            type: String,
+            required: true,
+            minlength: [5, 'must be at least 5 characters long'],
+            maxlength: [20, 'cannot exceed 20 characters'],
+        },
+
+        telephone: {
+            type: String,
+            required: true,
+            match: [/^\+?380\d{9}$/, 'Invalid format']
+        },
+
+        email: {
+            type: String,
+            required: [true, 'is required'],
+            minlength: [10, 'must be at least 10 characters long'],
+            maxlength: [40, 'cannot exceed 40 characters'],
+            match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid format']
+        },
+
         amountOrder: { type: Number, required: true },
         products: [
             {
                 productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
-                quantity: { type: Number, required: true },
-                price: { type: Number, required: true }
+                quantity: { type: Number, required: true }
             }
         ],
         status: {

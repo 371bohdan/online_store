@@ -1,6 +1,8 @@
 import mailController from "../../config/mail/mailController";
+import { CartDTO, convertToCartDTO } from "../dto/CartDTO";
 import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
 import { convertToUserDTO, UserDTO } from "../dto/UserDTO";
+import Cart from "../models/carts";
 import Order from "../models/orders";
 import User, { IUser } from "../models/users";
 import { jwtService } from "./auxiliary/jwtService";
@@ -34,6 +36,17 @@ export const userSelfAccessService = {
         }, { returnDocument: 'after' }) as IUser;
 
         return convertToUserDTO(updatedUser);
+    },
+
+    getCart: async (bearerToken: string): Promise<CartDTO | null> => {
+        const user = await jwtService.getUserFromBearerToken(bearerToken);
+        const cart = await Cart.findOne({ userId: user.id });
+
+        /*   if (!cart) {
+               throw new BadRequestError("You don't have any cart yet");
+           }*/
+
+        return cart ? convertToCartDTO(cart) : cart;
     },
 
     getOrders: async (bearerToken: string): Promise<OrderDTO[]> => {

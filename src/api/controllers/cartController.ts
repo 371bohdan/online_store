@@ -5,20 +5,20 @@ import asyncHandler from "../middleware/errors/asyncHandler";
 
 const cartController = {
     addProduct: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { productId, quantity, userId } = req.body;
+        const { productId, quantity } = req.body;
+        const bearerToken = req.headers.authorization;
+
         if (!productId || !quantity) {
             throw new ValidationError('ProductId, and quantity are required');
         }
 
-        const createdCart = await cartService.addProduct(productId, quantity, userId);
+        const createdCart = await cartService.addProduct(bearerToken, productId, quantity);
         res.json({ message: "Product added to cart successfully", createdCart });
     }),
 
     removeProduct: asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { userId, productId, quantity } = req.body;
-        if (!userId) {
-            throw new ValidationError('userId is required');
-        }
+        const { productId, quantity } = req.body;
+        const bearerToken = req.headers.authorization;
 
         if (!productId) {
             throw new ValidationError('ProductId is required');
@@ -28,7 +28,7 @@ const cartController = {
             throw new ValidationError('Quantity cannot be negative');
         }
 
-        const cart = await cartService.removeProduct(userId, productId, quantity);
+        const cart = await cartService.removeProduct(bearerToken, productId, quantity);
         res.json({ message: "Product removed from cart successfully", cart });
     })
 };

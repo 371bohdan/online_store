@@ -103,6 +103,19 @@ const options = {
                         }
                     },
 
+                    CartDto: {
+                        type: 'object',
+                        properties: {
+                            totalPrice: { type: 'number', example: 1000 },
+                            products: {
+                                type: 'object', properties: [{
+                                    productId: { type: 'string', example: '67b1cf2abb50ec824a8390de' },
+                                    quantity: { type: 'number', example: 1 }
+                                }]
+                            }
+                        }
+                    },
+
                     OrderDto: {
                         type: 'object',
                         properties: {

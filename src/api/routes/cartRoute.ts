@@ -4,6 +4,7 @@ import genericCrudRoute from "./genericCrudRoute";
 import Cart, { ICart } from "../models/carts";
 import { Model } from "mongoose";
 import errorHandler from "../middleware/errors/errorHandler";
+import requireAuth from "../middleware/auth/requireAuth";
 
 const router: express.Router = express.Router();
 
@@ -14,6 +15,8 @@ const router: express.Router = express.Router();
  *     tags:
  *       - carts API
  *     summary: Add a product to the cart
+ *     security:
+ *       - bearerAuth: [] 
  *     description: Adds a product to the user's cart. The cart is identified either by `userId` (for authenticated users) or `sessionId` (for guest users).
  *     requestBody:
  *       required: true
@@ -22,9 +25,6 @@ const router: express.Router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *                 description: (Optional) The user ID associated with the cart (for authenticated users)
  *               productId:
  *                 type: string
  *                 description: The ID of the product to add
@@ -72,7 +72,7 @@ const router: express.Router = express.Router();
  *                   schema:
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
-router.post('/add', cartController.addProduct);
+router.post('/add', requireAuth, cartController.addProduct);
 
 
 /**
@@ -82,6 +82,8 @@ router.post('/add', cartController.addProduct);
  *     tags:
  *       - carts API
  *     summary: Remove a product from the cart or update its quantity
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -89,9 +91,6 @@ router.post('/add', cartController.addProduct);
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *                 description: (Optional) The user ID associated with the cart (for authenticated users)
  *               productId:
  *                 type: string
  *                 description: The ID of the product to remove
@@ -100,7 +99,6 @@ router.post('/add', cartController.addProduct);
  *                 description: The quantity of the product to remove. Defaults to 1 if not provided.
  *             required:
  *               - productId
- *               - userId
  *     responses:
  *       200:
  *         description: Successfully removed product from the cart
@@ -115,9 +113,6 @@ router.post('/add', cartController.addProduct);
  *                 cart:
  *                   type: object
  *                   properties:
- *                     userId:
- *                       type: string
- *                       description: The ID of the user
  *                     sessionId:
  *                       type: string
  *                       description: The session ID
@@ -165,7 +160,7 @@ router.post('/add', cartController.addProduct);
  *                 error:
  *                   type: object
  */
-router.post("/remove", cartController.removeProduct);
+router.post("/remove", requireAuth, cartController.removeProduct);
 
 router.use(genericCrudRoute(Cart as Model<ICart>, "carts", ['get', 'post', 'put', 'delete']));
 router.use(errorHandler);

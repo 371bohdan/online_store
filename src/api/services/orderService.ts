@@ -9,16 +9,30 @@ import { OrderStatuses } from "../models/enums/orderStatusesEnum";
 import { ensureItemExists, getItemByField } from "./genericCrudService";
 import BadRequestError from "../errors/general/BadRequestError";
 import AuthorizationError from "../errors/auth/AuthorizationError";
+import { jwtService } from "./auxiliary/jwtService";
 
 export const orderService = {
-    createOrder: async (body: { products: OrderItem[] } & any, user: any): Promise<HydratedDocument<IOrder>> => {
+    createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<HydratedDocument<IOrder>> => {
+        let user, products;
+
+        if (bearerToken) {
+            user = await jwtService.getUserFromBearerToken(bearerToken);
+
+            if (await Cart.exists({ userId: user.id })) {
+                products = (await Cart.findOne({ userId: user.id }))?.products;
+            }
+        }
+
+        if (!products) {
+            products = body.products;
+        }
+
         const {
             deliveryCompanyId,
             firstName,
             lastName,
             telephone,
-            email,
-            products
+            email
         } = body;
 
         if (!user && !email) {
@@ -28,7 +42,10 @@ export const orderService = {
         let totalAmount = 0;
         for (const item of products) {
             const product = await Product.findById(item.productId);
+
             if (!product) throw new NotFoundError(`Product with ID ${item.productId} not found`);
+            if (item.quantity <= 0) throw new BadRequestError('Quantity of product cannot be 0 or less');
+
             totalAmount += product.price * item.quantity;
         }
 
@@ -43,7 +60,7 @@ export const orderService = {
         };
 
         if (user) {
-            orderData.userId = user._id;
+            orderData.userId = user.id;
 
             // Отримати кошик користувача
             const cart = await Cart.findOne({ userId: user._id });
@@ -66,7 +83,7 @@ export const orderService = {
             });
         }
 
-        if (!user) {
+        if (user) {
             // Відправка email з деталями замовлення
             const orderDetails = {
                 firstName,

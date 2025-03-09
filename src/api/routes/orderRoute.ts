@@ -16,6 +16,8 @@ const router = express.Router();
  *     tags:
  *       - orders API
  *     summary: Create an order based on the cart
+ *     security:
+ *       - bearerAuth: [] 
  *     requestBody:
  *       required: true
  *       content:

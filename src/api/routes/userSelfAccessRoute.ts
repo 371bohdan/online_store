@@ -33,7 +33,7 @@ const router = express.Router();
  *                   schema:
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
-router.get('/profile', requireAuth, userSelfAccessController.getProfile)   //add self access middleware later
+router.get('/profile', requireAuth, userSelfAccessController.getProfile);
 
 /**
  * @swagger
@@ -83,6 +83,37 @@ router.get('/profile', requireAuth, userSelfAccessController.getProfile)   //add
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.patch('/profile', requireAuth, userSelfAccessController.updateProfile)
+
+/**
+ * @swagger
+ * /api/user-self-access/cart:
+ *  get:
+ *      tags:
+ *          - user self access API
+ *      summary: get own cart
+ *      security:
+ *       - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: Success
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Dto/CartDto'
+ *          404:
+ *              description: User not found
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+ */
+router.get('/cart', requireAuth, userSelfAccessController.getCart);
 
 /**
  * @swagger
