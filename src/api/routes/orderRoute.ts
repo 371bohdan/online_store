@@ -11,11 +11,12 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/orders/create:
+ * /api/orders:
  *   post:
  *     tags:
  *       - orders API
  *     summary: Create an order based on the cart
+ *     description: Need to provide a product array if the user is not authorised or doesn't have a cart of products. Otherwise, the user's cart will be used.
  *     security:
  *       - bearerAuth: [] 
  *     requestBody:
@@ -28,6 +29,7 @@ const router = express.Router();
  *               deliveryCompanyId:
  *                 type: string
  *                 description: Delivery company including price and delivery method
+ *                 example: 679629d0b6b2b65ac85b3c26
  *               firstName:
  *                 type: string
  *                 description: First name of the client
@@ -37,9 +39,11 @@ const router = express.Router();
  *               telephone:
  *                 type: string
  *                 description: Client's phone number
+ *                 example: 380123456789
  *               email:
  *                 type: string
  *                 description: Client's email address
+ *                 example: example@gmail.com
  *               products:
  *                 type: array
  *                 items:
@@ -62,33 +66,9 @@ const router = express.Router();
  *       201:
  *         description: Order created successfully
  *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Order created successfully
- *                 order:
- *                   type: object
- *                   properties:
- *                     userId:
- *                       type: string
- *                       description: User ID associated with the order
- *                     deliveryCompanyId:
- *                       type: string
- *                       description: Selected delivery company ID
- *                     firstName:
- *                       type: string
- *                     lastName:
- *                       type: string
- *                     telephone:
- *                       type: string
- *                     email:
- *                       type: string
- *                     amountOrder:
- *                       type: number
- *                       description: Total price of the order
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Dto/OrderDto'
  *       400:
  *         description: Bad request, missing or invalid parameters
  *         content:
@@ -122,7 +102,7 @@ const router = express.Router();
  *                 error:
  *                   type: object
  */
-router.post("/create", orderController.createOrder);
+router.post("/", orderController.createOrder);
 
 /**
  * @swagger
@@ -185,7 +165,7 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  *              content:
  *               application/json:
  *                   schema:
- *                       $ref: '#/components/schemas/Models/Order'
+ *                       $ref: '#/components/schemas/Dto/OrderDto'
  *          400:
  *              description: The body doesn't match the required properties
  *              content:

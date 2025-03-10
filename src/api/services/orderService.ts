@@ -1,4 +1,3 @@
-import { HydratedDocument } from "mongoose";
 import Order, { IOrder } from "../models/orders";
 import Product from "../models/products";
 import Cart from "../models/carts";
@@ -10,9 +9,10 @@ import { ensureItemExists, getItemByField } from "./genericCrudService";
 import BadRequestError from "../errors/general/BadRequestError";
 import AuthorizationError from "../errors/auth/AuthorizationError";
 import { jwtService } from "./auxiliary/jwtService";
+import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
 
 export const orderService = {
-    createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<HydratedDocument<IOrder>> => {
+    createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
         let user, products;
 
         if (bearerToken) {
@@ -60,17 +60,7 @@ export const orderService = {
         };
 
         if (user) {
-            orderData.userId = user.id;
-
-            // Отримати кошик користувача
-            const cart = await Cart.findOne({ userId: user._id });
-            if (cart) {
-                // Видалити куплені товари з кошика
-                cart.products = cart.products.filter((cartItem) =>
-                    !products.some((orderItem: OrderItem) => orderItem.productId === cartItem.productId.toString())
-                );
-                await cart.save();
-            }
+            await Cart.findOneAndUpdate({ userId: user._id }, { products: [], totalPrice: 0 });
         }
 
         const order = new Order(orderData);
@@ -93,17 +83,17 @@ export const orderService = {
                 products,
                 amountOrder: totalAmount
             };
-            await mailController.sendMail(email, "Ваше замовлення", JSON.stringify(orderDetails, null, 2));
+            mailController.sendMail(email, "Ваше замовлення", JSON.stringify(orderDetails, null, 2));
         }
 
-        return savedOrder;
+        return convertToOrderDTO(savedOrder);
     },
 
     getAllStatuses: (): Array<OrderStatuses> => {
         return Object.values(OrderStatuses);
     },
 
-    changeStatus: async (orderId: string, newStatus: string): Promise<IOrder> => {
+    changeStatus: async (orderId: string, newStatus: string): Promise<OrderDTO> => {
         const currentStatus = (await getItemByField(Order, '_id', orderId)).status;
 
         if (!Object.values(OrderStatuses).includes(newStatus as OrderStatuses)) {
@@ -117,21 +107,24 @@ export const orderService = {
         switch (currentStatus as OrderStatuses) {
             case OrderStatuses.PROCESSING:
                 if (newStatus === OrderStatuses.ACCEPTED) {
-                    return setStatus(orderId, newStatus);
+                    const updatedOrder = await setStatus(orderId, newStatus);
+                    return convertToOrderDTO(updatedOrder);
                 }
 
                 break;
 
             case OrderStatuses.ACCEPTED:
                 if (newStatus === OrderStatuses.SENT) {
-                    return setStatus(orderId, newStatus);
+                    const updatedOrder = await setStatus(orderId, newStatus);
+                    return convertToOrderDTO(updatedOrder);
                 }
 
                 break;
 
             case OrderStatuses.SENT:
                 if (newStatus === OrderStatuses.RECEIVED) {
-                    return setStatus(orderId, newStatus);
+                    const updatedOrder = await setStatus(orderId, newStatus);
+                    return convertToOrderDTO(updatedOrder);
                 }
 
                 break;
@@ -153,6 +146,7 @@ export const orderService = {
 async function setStatus(orderId: string, status: string): Promise<IOrder> {
     await ensureItemExists(Order, '_id', orderId);
     const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { returnDocument: 'after' }) as IOrder;
+
     mailController.sendMail(updatedOrder.email, 'Lumen Online Store: status change',
         `The status of your order has been changed to '${status}'. Go to the order page for more details.`);
     return updatedOrder;

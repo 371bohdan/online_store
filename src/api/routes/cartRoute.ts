@@ -38,16 +38,9 @@ const router: express.Router = express.Router();
  *       200:
  *         description: Product added to cart successfully
  *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Confirmation message
- *                 cart:
- *                   type: object
- *                   description: The updated cart object
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Dto/CartDto'
  *       400:
  *         description: Bad request (missing or invalid parameters)
  *         content:
@@ -103,30 +96,9 @@ router.post('/add', requireAuth, cartController.addProduct);
  *       200:
  *         description: Successfully removed product from the cart
  *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Product removed from cart successfully
- *                 cart:
- *                   type: object
- *                   properties:
- *                     sessionId:
- *                       type: string
- *                       description: The session ID
- *                     products:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           productId:
- *                             type: string
- *                             description: The product ID
- *                           quantity:
- *                             type: integer
- *                             description: The quantity of the product in the cart
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Dto/CartDto'
  *       400:
  *         description: Bad request, missing or invalid parameters
  *         content:

@@ -95,7 +95,7 @@ router.patch('/profile', requireAuth, userSelfAccessController.updateProfile)
  *       - bearerAuth: []
  *      responses:
  *          200:
- *              description: Success
+ *              description: Returns CartDto or null (if cart doesn't exist)
  *              content:
  *               application/json:
  *                   schema:

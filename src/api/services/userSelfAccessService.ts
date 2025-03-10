@@ -41,11 +41,6 @@ export const userSelfAccessService = {
     getCart: async (bearerToken: string): Promise<CartDTO | null> => {
         const user = await jwtService.getUserFromBearerToken(bearerToken);
         const cart = await Cart.findOne({ userId: user.id });
-
-        /*   if (!cart) {
-               throw new BadRequestError("You don't have any cart yet");
-           }*/
-
         return cart ? convertToCartDTO(cart) : cart;
     },
 
