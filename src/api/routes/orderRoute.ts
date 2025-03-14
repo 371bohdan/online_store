@@ -17,6 +17,7 @@ const router = express.Router();
  *       - orders API
  *     summary: Create an order based on the cart
  *     description: Need to provide a product array if the user is not authorised or doesn't have a cart of products. Otherwise, the user's cart will be used.
+ *          Payment method = cash or online payment.
  *     security:
  *       - bearerAuth: [] 
  *     requestBody:
@@ -44,6 +45,9 @@ const router = express.Router();
  *                 type: string
  *                 description: Client's email address
  *                 example: example@gmail.com
+ *               paymentMethod: 
+ *                 type: string
+ *                 example: cash
  *               products:
  *                 type: array
  *                 items:
@@ -62,6 +66,7 @@ const router = express.Router();
  *               - telephone
  *               - email
  *               - products
+ *               - paymentMethod
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -196,6 +201,78 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.patch('/:id/status', requireAuth, requireAdminOrOwnerRole, orderController.changeStatus);
+
+/**
+ * @swagger
+ * /api/orders/successfulPayment:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: if payment success
+ *      parameters:
+ *       - in: query
+ *         name: session_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: session id
+ *      responses:
+ *          200:
+ *              description: Payment was successful
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Dto/OrderDto'
+ *          404:
+ *              description: The session not found
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+ */
+router.get('/successfulPayment', orderController.successfulPayment);
+
+/**
+ * @swagger
+ * /api/orders/unsuccessfulPayment:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: if payment unsuccess
+ *      parameters:
+ *       - in: query
+ *         name: session_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: session id
+ *      responses:
+ *          200:
+ *              description: Payment cancelled
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Dto/OrderDto'
+ *          404:
+ *              description: The session not found
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'      
+ */
+router.get('/unsuccessfulPayment', orderController.unsuccessfulPayment);
 
 router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['put', 'delete']));
 router.use(errorHandler);

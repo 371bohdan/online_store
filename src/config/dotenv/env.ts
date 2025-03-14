@@ -77,6 +77,11 @@ const envSchema = zod.object({
     LOGTAIL_ENDPOINT: zod.string().refine(
         (endpoint) => endpoint.startsWith('https://'),
         'Invalid logtail endpoint'
+    ),
+
+    STRIPE_SECRET_KEY: zod.string().refine(
+        key => key.length === 107 && key.startsWith('sk_test_'),
+        'Invalid stripe secret key'
     )
 });
 

@@ -19,6 +19,18 @@ const orderController = {
         const newStatus = req.body.status;
         const updatedOrder = await orderService.changeStatus(orderId, newStatus);
         res.json(updatedOrder);
+    }),
+
+    successfulPayment: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const sessionId = req.query.session_id as string;
+        const orderDto = await orderService.successfulPayment(sessionId);
+        res.json(orderDto);
+    }),
+
+    unsuccessfulPayment: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const sessionId = req.query.session_id as string;
+        const orderDto = await orderService.unsuccessfulPayment(sessionId);
+        res.json(orderDto);
     })
 };
 

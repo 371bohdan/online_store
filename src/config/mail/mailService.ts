@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { ENV } from '../../../config/dotenv/env';
+import { ENV } from '../dotenv/env';
 
 export const mailService = {
     sendMail: (to: String, subject: String, message: String): void => {

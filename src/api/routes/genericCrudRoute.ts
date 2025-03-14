@@ -5,7 +5,7 @@ import requireAuth from '../middleware/auth/requireAuth';
 import requireAdminOrOwnerRole from '../middleware/auth/requireAdminOrOwnerRole';
 import { genericCrudService } from '../services/genericCrudService';
 import errorHandler from '../middleware/errors/errorHandler';
-import { swaggerService } from '../services/auxiliary/swaggerService';
+import { swaggerService } from '../../config/swagger/swaggerService';
 
 const genericCrudRoute = <T extends Document>(Model: Model<T>, modelName: string, methodsToSecure: Array<string>): express.Router => {
     const router: express.Router = express.Router();

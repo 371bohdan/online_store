@@ -1,4 +1,4 @@
-import { mailService } from "../../api/services/auxiliary/mailService";
+import { mailService } from "./mailService";
 
 const mailController = {
     sendMail: (to: String, subject: String, message: String): void => {

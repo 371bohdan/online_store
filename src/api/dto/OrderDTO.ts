@@ -1,3 +1,4 @@
+import { PaymentMethods } from "../models/enums/paymentMethods";
 import { IOrder } from "../models/orders";
 
 export interface OrderDTO {
@@ -7,7 +8,9 @@ export interface OrderDTO {
     telephone: string,
     email: string,
     amountOrder: number,
-    status: string
+    status: string,
+    paymentMethod: PaymentMethods,
+    isPaid: boolean
 }
 
 export const convertToOrderDTO = (order: IOrder): OrderDTO => ({
@@ -17,5 +20,7 @@ export const convertToOrderDTO = (order: IOrder): OrderDTO => ({
     telephone: order.telephone,
     email: order.email,
     amountOrder: order.amountOrder,
-    status: order.status
+    status: order.status,
+    paymentMethod: order.paymentMethod,
+    isPaid: order.isPaid
 })

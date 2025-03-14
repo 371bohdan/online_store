@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import mongooseToSwagger from "mongoose-to-swagger";
 import { OrderStatuses } from "./enums/orderStatusesEnum";
+import { PaymentMethods } from "./enums/paymentMethods";
 
 export interface IOrder extends Document {
     userId?: Types.ObjectId;
@@ -15,7 +16,9 @@ export interface IOrder extends Document {
         quantity: number;
         price: number;
     }[];
-    status: string
+    status: string,
+    paymentMethod: PaymentMethods,
+    isPaid: boolean
 }
 
 const OrderSchema = new Schema<IOrder>(
@@ -52,16 +55,29 @@ const OrderSchema = new Schema<IOrder>(
         },
 
         amountOrder: { type: Number, required: true },
+
         products: [
             {
                 productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
                 quantity: { type: Number, required: true }
             }
         ],
+
         status: {
             type: String,
             enum: OrderStatuses,
             default: OrderStatuses.PROCESSING
+        },
+
+        paymentMethod: {
+            type: String,
+            enum: PaymentMethods,
+            default: PaymentMethods.CASH
+        },
+
+        isPaid: {
+            type: Boolean,
+            default: false
         }
     }
 )

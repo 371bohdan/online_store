@@ -66,5 +66,12 @@ app.use('/api/carts', cartRoute);
 import authRoute from './api/routes/authRoute';
 app.use('/api/auth', authRoute);
 
+//stripe
+import Stripe from 'stripe';
+import stripeRoute from './config/stripe/stripeRoute';
+
+export const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2025-02-24.acacia' });
+app.use('/api/stripe', stripeRoute);
+
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions, swaggerUiOptions));

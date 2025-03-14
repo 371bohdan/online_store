@@ -10,6 +10,7 @@ import BadRequestError from "../errors/general/BadRequestError";
 import AuthorizationError from "../errors/auth/AuthorizationError";
 import { jwtService } from "./auxiliary/jwtService";
 import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
+import { stripe } from "../../app";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
@@ -32,7 +33,8 @@ export const orderService = {
             firstName,
             lastName,
             telephone,
-            email
+            email,
+            paymentMethod
         } = body;
 
         if (!user && !email) {
@@ -56,7 +58,8 @@ export const orderService = {
             telephone,
             email: user ? user.email : email,
             products,
-            amountOrder: totalAmount
+            amountOrder: totalAmount,
+            paymentMethod
         };
 
         if (user) {
@@ -134,6 +137,21 @@ export const orderService = {
         }
 
         throw new BadRequestError("Logic mismatch: sorry, you cannot set this status");
+    },
+
+    successfulPayment: async (sessionId: string): Promise<OrderDTO> => {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const orderId = session.metadata?.orderId;
+        await ensureItemExists(Order, '_id', orderId);
+        const updatedOrder = await Order.findByIdAndUpdate(orderId, { isPaid: true }, { returnDocument: 'after' }) as IOrder;
+        return convertToOrderDTO(updatedOrder);
+    },
+
+    unsuccessfulPayment: async (sessionId: string): Promise<OrderDTO> => {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const orderId = session.metadata?.orderId;
+        const order = await getItemByField(Order, '_id', orderId);
+        return convertToOrderDTO(order);
     }
 }
 
