@@ -38,6 +38,15 @@ mongoose.connect(ENV.MONGODB_URI);
 import { initialiseOwnerAccount } from './api/services/authService';
 initialiseOwnerAccount();
 
+//passport
+import './config/passport/passportConfig';
+import session from 'express-session';
+import passport from 'passport';
+
+app.use(session({ secret: ENV.SESSION_SECRET, resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 //user routes
 import userRoute from './api/routes/userRoute';
 app.use('/api/users', userRoute);
@@ -65,6 +74,13 @@ app.use('/api/carts', cartRoute);
 //auth routes
 import authRoute from './api/routes/authRoute';
 app.use('/api/auth', authRoute);
+
+//stripe
+import Stripe from 'stripe';
+import stripeRoute from './config/stripe/stripeRoute';
+
+export const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2025-02-24.acacia' });
+app.use('/api/stripe', stripeRoute);
 
 //swagger
 app.use('/api/docs', swaggerUIPath.serve, swaggerUIPath.setup(swaggerOptions, swaggerUiOptions));

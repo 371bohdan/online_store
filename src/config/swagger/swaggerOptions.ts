@@ -103,6 +103,23 @@ const options = {
                         }
                     },
 
+                    CartDto: {
+                        type: 'object',
+                        properties: {
+                            totalPrice: { type: 'number', example: 1000 },
+                            products: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        productId: { type: 'string', example: '67b1cf2abb50ec824a8390de' },
+                                        quantity: { type: 'number', example: 1 }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
                     OrderDto: {
                         type: 'object',
                         properties: {
@@ -112,7 +129,18 @@ const options = {
                             telephone: { type: 'string', example: "380123456789" },
                             email: { type: 'string', example: 'example@gmail.com' },
                             amountOrder: { type: 'number', example: "1000" },
-                            status: { type: 'string', example: 'processing' }
+                            status: { type: 'string', example: 'processing' },
+                            paymentMethod: { type: 'string', example: 'cash' },
+                            isPaid: { type: 'boolean', example: 'false' }
+                        }
+                    }
+                },
+
+                Stripe: {
+                    PaymentSession: {
+                        type: 'object',
+                        properties: {
+                            uri: { type: 'string', example: 'https://checkout.stripe.com/c/pay/<session_key>' }
                         }
                     }
                 }
@@ -120,7 +148,7 @@ const options = {
         },
     },
 
-    apis: ['./src/api/routes/*.ts']
+    apis: ['./src/api/routes/*.ts', './src/config/stripe/stripeRoute.ts']
 }
 
 export const swaggerUiOptions = {

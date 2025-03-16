@@ -77,6 +77,26 @@ const envSchema = zod.object({
     LOGTAIL_ENDPOINT: zod.string().refine(
         (endpoint) => endpoint.startsWith('https://'),
         'Invalid logtail endpoint'
+    ),
+
+    STRIPE_SECRET_KEY: zod.string().refine(
+        key => key.length === 107 && key.startsWith('sk_test_'),
+        'Invalid stripe secret key'
+    ),
+
+    GOOGLE_CLIENT_ID: zod.string().refine(
+        id => id.endsWith('.apps.googleusercontent.com') && id.length === 72,
+        'Invalid google client id'
+    ),
+
+    GOOGLE_CLIENT_SECRET: zod.string().refine(
+        secret => secret.length === 35,
+        'Invalid google client secret'
+    ),
+
+    SESSION_SECRET: zod.string().refine(
+        secret => secret.length >= 15,
+        'Invalid session secret'
     )
 });
 

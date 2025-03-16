@@ -1,4 +1,3 @@
-import { HydratedDocument } from "mongoose";
 import Order, { IOrder } from "../models/orders";
 import Product from "../models/products";
 import Cart from "../models/carts";
@@ -9,16 +8,33 @@ import { OrderStatuses } from "../models/enums/orderStatusesEnum";
 import { ensureItemExists, getItemByField } from "./genericCrudService";
 import BadRequestError from "../errors/general/BadRequestError";
 import AuthorizationError from "../errors/auth/AuthorizationError";
+import { jwtService } from "./auxiliary/jwtService";
+import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
+import { stripe } from "../../app";
 
 export const orderService = {
-    createOrder: async (body: { products: OrderItem[] } & any, user: any): Promise<HydratedDocument<IOrder>> => {
+    createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
+        let user, products;
+
+        if (bearerToken) {
+            user = await jwtService.getUserFromBearerToken(bearerToken);
+
+            if (await Cart.exists({ userId: user.id })) {
+                products = (await Cart.findOne({ userId: user.id }))?.products;
+            }
+        }
+
+        if (!products) {
+            products = body.products;
+        }
+
         const {
             deliveryCompanyId,
             firstName,
             lastName,
             telephone,
             email,
-            products
+            paymentMethod
         } = body;
 
         if (!user && !email) {
@@ -28,7 +44,10 @@ export const orderService = {
         let totalAmount = 0;
         for (const item of products) {
             const product = await Product.findById(item.productId);
+
             if (!product) throw new NotFoundError(`Product with ID ${item.productId} not found`);
+            if (item.quantity <= 0) throw new BadRequestError('Quantity of product cannot be 0 or less');
+
             totalAmount += product.price * item.quantity;
         }
 
@@ -39,21 +58,12 @@ export const orderService = {
             telephone,
             email: user ? user.email : email,
             products,
-            amountOrder: totalAmount
+            amountOrder: totalAmount,
+            paymentMethod
         };
 
         if (user) {
-            orderData.userId = user._id;
-
-            // Отримати кошик користувача
-            const cart = await Cart.findOne({ userId: user._id });
-            if (cart) {
-                // Видалити куплені товари з кошика
-                cart.products = cart.products.filter((cartItem) =>
-                    !products.some((orderItem: OrderItem) => orderItem.productId === cartItem.productId.toString())
-                );
-                await cart.save();
-            }
+            await Cart.findOneAndUpdate({ userId: user._id }, { products: [], totalPrice: 0 });
         }
 
         const order = new Order(orderData);
@@ -66,7 +76,7 @@ export const orderService = {
             });
         }
 
-        if (!user) {
+        if (user) {
             // Відправка email з деталями замовлення
             const orderDetails = {
                 firstName,
@@ -76,17 +86,17 @@ export const orderService = {
                 products,
                 amountOrder: totalAmount
             };
-            await mailController.sendMail(email, "Ваше замовлення", JSON.stringify(orderDetails, null, 2));
+            mailController.sendOrderConfirmation(user.email, orderDetails);
         }
 
-        return savedOrder;
+        return convertToOrderDTO(savedOrder);
     },
 
     getAllStatuses: (): Array<OrderStatuses> => {
         return Object.values(OrderStatuses);
     },
 
-    changeStatus: async (orderId: string, newStatus: string): Promise<IOrder> => {
+    changeStatus: async (orderId: string, newStatus: string): Promise<OrderDTO> => {
         const currentStatus = (await getItemByField(Order, '_id', orderId)).status;
 
         if (!Object.values(OrderStatuses).includes(newStatus as OrderStatuses)) {
@@ -100,21 +110,24 @@ export const orderService = {
         switch (currentStatus as OrderStatuses) {
             case OrderStatuses.PROCESSING:
                 if (newStatus === OrderStatuses.ACCEPTED) {
-                    return setStatus(orderId, newStatus);
+                    const updatedOrder = await setStatus(orderId, newStatus);
+                    return convertToOrderDTO(updatedOrder);
                 }
 
                 break;
 
             case OrderStatuses.ACCEPTED:
                 if (newStatus === OrderStatuses.SENT) {
-                    return setStatus(orderId, newStatus);
+                    const updatedOrder = await setStatus(orderId, newStatus);
+                    return convertToOrderDTO(updatedOrder);
                 }
 
                 break;
 
             case OrderStatuses.SENT:
                 if (newStatus === OrderStatuses.RECEIVED) {
-                    return setStatus(orderId, newStatus);
+                    const updatedOrder = await setStatus(orderId, newStatus);
+                    return convertToOrderDTO(updatedOrder);
                 }
 
                 break;
@@ -124,6 +137,21 @@ export const orderService = {
         }
 
         throw new BadRequestError("Logic mismatch: sorry, you cannot set this status");
+    },
+
+    successfulPayment: async (sessionId: string): Promise<OrderDTO> => {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const orderId = session.metadata?.orderId;
+        await ensureItemExists(Order, '_id', orderId);
+        const updatedOrder = await Order.findByIdAndUpdate(orderId, { isPaid: true }, { returnDocument: 'after' }) as IOrder;
+        return convertToOrderDTO(updatedOrder);
+    },
+
+    unsuccessfulPayment: async (sessionId: string): Promise<OrderDTO> => {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const orderId = session.metadata?.orderId;
+        const order = await getItemByField(Order, '_id', orderId);
+        return convertToOrderDTO(order);
     }
 }
 
@@ -133,10 +161,10 @@ export const orderService = {
  * @param status The new status
  * @throws NotFoundError exception if order doesn't exist in database (from ensureItemExists() method)
  */
-async function setStatus(orderId: string, status: string): Promise<IOrder> {
+async function setStatus(orderId: string, status: OrderStatuses): Promise<IOrder> {
     await ensureItemExists(Order, '_id', orderId);
     const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { returnDocument: 'after' }) as IOrder;
-    mailController.sendMail(updatedOrder.email, 'Lumen Online Store: status change',
-        `The status of your order has been changed to '${status}'. Go to the order page for more details.`);
+
+    mailController.sendOrderStatusChangedLetter(updatedOrder.email, status);
     return updatedOrder;
 }

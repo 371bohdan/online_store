@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import mongooseToSwagger from 'mongoose-to-swagger';
 import { UserRoles } from "./enums/userRolesEnum";
 import bcrypt from 'bcryptjs'
-import { randomUUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
 
 export interface IUser extends mongoose.Document {
     email: string,
@@ -10,13 +10,14 @@ export interface IUser extends mongoose.Document {
     firstName: string,
     lastName: string,
     avatar: String;
-    recoveryCode: string,
+    recoveryCode: UUID,
     recoveryCodeCreatedAt: Date,
     role: string,
     isVerified: Boolean,
-    verificationCode: string,
+    verificationCode: UUID,
     verificationCodeCreatedAt: Date,
-    refreshToken: string
+    refreshToken: string,
+    isOAuth: boolean
 }
 
 const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
@@ -31,7 +32,9 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
 
     password: {
         type: String,
-        required: true,
+        required: function () {
+            return !this.isOAuth;
+        },
         minlength: [8, 'must be at least 8 characters long'],
         maxlength: [20, 'cannot exceed 20 characters'],
         match: [/^(?=.*[A-Z])(?=.*\d).+$/, 'invalid format']
@@ -85,11 +88,20 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
 
     refreshToken: {
         type: String
+    },
+
+    isOAuth: {
+        type: Boolean,
+        default: false
     }
 })
 
 userSchema.pre<IUser>('save', async function (next) {
-    this.password = bcrypt.hashSync(this.password, 10);
+
+    if (!this.isOAuth) {
+        this.password = bcrypt.hashSync(this.password, 10);
+    }
+
     if (!this.isVerified) {
         this.verificationCode = randomUUID();
         this.verificationCodeCreatedAt = new Date();
