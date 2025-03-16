@@ -18,8 +18,6 @@ import { StatusCodes } from "http-status-codes";
 import { ensureItemExists, getItemByField } from "./genericCrudService";
 import { logger } from "../../config/winston/winstonConfig";
 
-const VERIFY_EMAIL_URI: string = ENV.HOST_URI + '/api/auth/verifyEmail';
-const RECOVER_PASSWORD_URI: string = ENV.HOST_URI + '/api/auth/passwordRecovery';
 const MESSAGE_TO_INTERACT_WITH_EMAIL: string = 'Please, check your email for the next steps!';
 const AUTH_LOGGER = logger.child({
     service: 'auth-service'
@@ -30,8 +28,7 @@ export const authService = {
         const user = new User({ email, password });
         const createdUser = await user.save({ validateBeforeSave: true });
 
-        mailController.sendMail(createdUser.email, 'Registration on the Lumen online store',
-            `Your account has been successfully created, but you need to verify it. Follow the link: ${VERIFY_EMAIL_URI}/${createdUser.verificationCode}`);
+        mailController.sendRegistrAndVerifLetter(createdUser.email, createdUser.verificationCode);
         return MESSAGE_TO_INTERACT_WITH_EMAIL;
     },
 
@@ -79,7 +76,7 @@ export const authService = {
         try {
             const recoveryCode = randomUUID();
             await User.findOneAndUpdate({ email }, { recoveryCode, password: null, recoveryCodeCreatedAt: new Date() })
-            mailController.sendMail(email, 'Lumen Online Store: password recovery', `You need to click on the link to recover your account: ${RECOVER_PASSWORD_URI}/${recoveryCode}`);
+            mailController.sendPasswordRecoveryLetter(email, recoveryCode);
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
 
         } catch (error: any) {
@@ -108,7 +105,7 @@ export const authService = {
             Object.assign(user, { password, recoveryCode: null, verificationCode: null, isVerified: true, recoveryCodeCreatedAt: null })
             await user.save();
 
-            mailController.sendMail(user.email, 'Lumen Online Store', 'Your account has been successfully restored and your password changed!');
+            mailController.sendAccountRestoredLetter(user.email);
             return message;
 
         } catch (error: any) {
@@ -147,7 +144,7 @@ export const authService = {
             await User.findOneAndUpdate({ _id: user.id }, { refreshToken });
             jwtService.setRefreshTokenInCookie(res, refreshToken);
 
-            mailController.sendMail(user.email, 'Lumen Online Store', 'Your account has been successfully verified. Have fun!');
+            mailController.sendSuccessfulVerificationLetter(user.email);
             return message;
 
         } catch (error: any) {
@@ -181,8 +178,7 @@ export const authService = {
             const newVerificationCode = randomUUID();
             await User.findOneAndUpdate({ email }, { verificationCode: newVerificationCode, verificationCodeCreatedAt: new Date() });
 
-            mailController.sendMail(email, 'Account verification in the Lumen online store',
-                `Link to verify your account: ${VERIFY_EMAIL_URI}/${newVerificationCode}.  If you didn't send the request to verify your account, ignore this letter.`)
+            mailController.sendVerificationLetter(email, newVerificationCode);
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
 
         } catch (error: any) {
@@ -210,15 +206,14 @@ export const authService = {
  * @returns Returns created user account
  * @throws An error if this email has already been used
  */
-async function forcedRegistration(email: String): Promise<HydratedDocument<IUser>> {
-    const recoveryId = randomUUID();
+async function forcedRegistration(email: string): Promise<HydratedDocument<IUser>> {
+    const recoveryCode = randomUUID();
     const existingUser = await User.findOne({ email });
 
     if (!existingUser) {
-        const user = new User({ email, recoveryId });
+        const user = new User({ email, recoveryCode });
         const createdUser = await user.save({ validateBeforeSave: false });
-        mailController.sendMail(email, 'Lumen Online Store: account creation',
-            `Your account has been created. Please follow the link to set a password: ${RECOVER_PASSWORD_URI}/${recoveryId}`);
+        mailController.sendForcedRegistrLetter(email, recoveryCode);
 
         return createdUser;
     }

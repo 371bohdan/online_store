@@ -38,6 +38,15 @@ mongoose.connect(ENV.MONGODB_URI);
 import { initialiseOwnerAccount } from './api/services/authService';
 initialiseOwnerAccount();
 
+//passport
+import './config/passport/passportConfig';
+import session from 'express-session';
+import passport from 'passport';
+
+app.use(session({ secret: ENV.SESSION_SECRET, resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 //user routes
 import userRoute from './api/routes/userRoute';
 app.use('/api/users', userRoute);

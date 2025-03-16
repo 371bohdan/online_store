@@ -1,6 +1,9 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { authController } from "../controllers/authController";
 import errorHandler from "../middleware/errors/errorHandler";
+import passport from "passport";
+import { ENV } from "../../config/dotenv/env";
+import { jwtService } from "../services/auxiliary/jwtService";
 
 const router: express.Router = express.Router();
 
@@ -313,6 +316,35 @@ router.post('/refresh', authController.refreshToken);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/logout', authController.logout);
+
+/**
+ * @swagger
+ * /api/auth/google-oauth:
+ *  get:
+ *      tags:
+ *          - auth API
+ *      summary: Sign up or login with your google account
+ *      description: Only works if you login via the browser tab (not via Swagger)
+ *      responses:
+ *          200:
+ *              description: Success
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+ */
+router.get('/google-oauth', passport.authenticate('google', { scope: ['profile', 'email'] }))
+
+router.get('/google-oauth/callback', passport.authenticate('google', { failureRedirect: '/' }),
+    (req: Request, res: Response) => {
+        const user = req.user as any;
+        jwtService.setRefreshTokenInCookie(res, user.token);
+        res.redirect(`${ENV.FRONT_PROD_URI}`);
+    }
+)
+
 router.use(errorHandler);
 
 export default router;

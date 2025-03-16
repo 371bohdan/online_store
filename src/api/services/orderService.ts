@@ -86,7 +86,7 @@ export const orderService = {
                 products,
                 amountOrder: totalAmount
             };
-            mailController.sendMail(email, "Ваше замовлення", JSON.stringify(orderDetails, null, 2));
+            mailController.sendOrderConfirmation(user.email, orderDetails);
         }
 
         return convertToOrderDTO(savedOrder);
@@ -161,11 +161,10 @@ export const orderService = {
  * @param status The new status
  * @throws NotFoundError exception if order doesn't exist in database (from ensureItemExists() method)
  */
-async function setStatus(orderId: string, status: string): Promise<IOrder> {
+async function setStatus(orderId: string, status: OrderStatuses): Promise<IOrder> {
     await ensureItemExists(Order, '_id', orderId);
     const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { returnDocument: 'after' }) as IOrder;
 
-    mailController.sendMail(updatedOrder.email, 'Lumen Online Store: status change',
-        `The status of your order has been changed to '${status}'. Go to the order page for more details.`);
+    mailController.sendOrderStatusChangedLetter(updatedOrder.email, status);
     return updatedOrder;
 }

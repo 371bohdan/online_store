@@ -23,8 +23,7 @@ export const userSelfAccessService = {
         if (body.password) {
             const isTheSamePassword = bcrypt.compareSync(body.password, user.password);
             if (!isTheSamePassword) {
-                mailController.sendMail(user.email, 'Lumen Online Store: password changed', "Hello, your password has recently been changed. " +
-                    "If you didn't change it, please contact our administration. \n Best Regards \nLumen Online Store Administration");
+                mailController.sendPasswordChangedLetter(user.email);
                 user.password = body.password;
                 await user.save();
             }
