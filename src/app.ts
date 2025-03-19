@@ -1,10 +1,9 @@
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import mongoose, { Model } from 'mongoose';
 import genericCrudRoute from './api/routes/genericCrudRoute';
 import swaggerUIPath from 'swagger-ui-express';
 import { swaggerOptions, swaggerUiOptions } from './config/swagger/swaggerOptions';
 import { ENV } from './config/dotenv/env';
-import cors from 'cors';
 import cookieParser from "cookie-parser";
 
 //entry point
@@ -27,12 +26,17 @@ import { morganMiddleware } from './config/morgan/morganMiddleware';
 app.use(morganMiddleware);
 
 //cors
-app.use(cors({
-    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI]
-}));
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.header('Access-Control-Allow-Origin', ['http://localhost:5173', ENV.FRONT_PROD_URI]);
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
+    next();
+});
 
 //database connection
-mongoose.connect(ENV.MONGODB_URI);
+mongoose.connect(ENV.MONGODB_URI, {
+    maxPoolSize: 5,
+    autoIndex: false
+});
 
 //initialise owner
 import { initialiseOwnerAccount } from './api/services/authService';
