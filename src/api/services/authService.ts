@@ -16,12 +16,12 @@ import { ActivationCodeExpiredError } from "../errors/auth/ActivationCodeExpired
 import { ErrorResponse, getErrorResponse } from "../errors/ErrorResponse";
 import { StatusCodes } from "http-status-codes";
 import { ensureItemExists, getItemByField } from "./genericCrudService";
-import { logger } from "../../config/winston/winstonConfig";
+//import { logger } from "../../config/winston/winstonConfig";
 
 const MESSAGE_TO_INTERACT_WITH_EMAIL: string = 'Please, check your email for the next steps!';
-const AUTH_LOGGER = logger.child({
+/*const AUTH_LOGGER = logger.child({
     service: 'auth-service'
-});
+});*/
 
 export const authService = {
     signUp: async (email: string, password: string): Promise<string> => {
@@ -80,7 +80,7 @@ export const authService = {
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
 
         } catch (error: any) {
-            if (error instanceof NotFoundError) {
+            /* if (error instanceof NotFoundError) {
                 AUTH_LOGGER.warn(`Failed due to non-existent email: ${email}`, {
                     method: 'passwordRecovery'
                 });
@@ -90,7 +90,7 @@ export const authService = {
                     method: 'passwordRecovery',
                     stack: error.stack
                 });
-            }
+            } */
 
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
         }
@@ -110,24 +110,24 @@ export const authService = {
 
         } catch (error: any) {
             if (error.message.startsWith('User validation failed') || error instanceof ActivationCodeExpiredError) {
-                AUTH_LOGGER.warn(error.message, {
+                /* AUTH_LOGGER.warn(error.message, {
                     method: 'confirmPasswordRecovery'
-                });
+                });  */
 
                 return getErrorResponse(StatusCodes.BAD_REQUEST, error.message);
             }
 
-            if (error instanceof NotFoundError) {
-                AUTH_LOGGER.warn(`Failed due to non-existent recovery code: ${recoveryCode}`, {
-                    method: 'confirmPasswordRecovery'
-                });
+            /* if (error instanceof NotFoundError) {
+               AUTH_LOGGER.warn(`Failed due to non-existent recovery code: ${recoveryCode}`, {
+                   method: 'confirmPasswordRecovery'
+               });
 
-            } else {
-                AUTH_LOGGER.warn(error.message, {
-                    method: 'confirmPasswordRecovery',
-                    stack: error.stack
-                });
-            }
+           } else {
+               AUTH_LOGGER.warn(error.message, {
+                   method: 'confirmPasswordRecovery',
+                   stack: error.stack
+               });
+           }  */
 
             return message;
         }
@@ -149,25 +149,25 @@ export const authService = {
 
         } catch (error: any) {
             if (error instanceof ActivationCodeExpiredError) {
-                AUTH_LOGGER.warn(`Failed because the verification code has expired: ${verificationCode}`, {
+                /* AUTH_LOGGER.warn(`Failed because the verification code has expired: ${verificationCode}`, {
                     method: 'verifyEmail'
-                });
+                }); */
 
                 return getErrorResponse(error.statusCode, error.message);
             }
 
-            if (error instanceof NotFoundError) {
-                AUTH_LOGGER.warn(`Failed due to non-existent verification code: ${verificationCode}`, {
-                    method: 'verifyEmail'
-                });
-
-            } else {
-                AUTH_LOGGER.warn(error.message, {
-                    method: 'verifyEmail',
-                    stack: error.stack
-                });
-            }
-
+            /*  if (error instanceof NotFoundError) {
+                 AUTH_LOGGER.warn(`Failed due to non-existent verification code: ${verificationCode}`, {
+                     method: 'verifyEmail'
+                 });
+ 
+             } else {
+                 AUTH_LOGGER.warn(error.message, {
+                     method: 'verifyEmail',
+                     stack: error.stack
+                 });
+             }
+  */
             return message;
         }
     },
@@ -182,7 +182,7 @@ export const authService = {
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
 
         } catch (error: any) {
-            if (error instanceof NotFoundError) {
+            /* if (error instanceof NotFoundError) {
                 AUTH_LOGGER.warn(`Failed due to non-existent email: ${email}`, {
                     method: 'verifyEmail'
                 });
@@ -192,7 +192,7 @@ export const authService = {
                     method: 'verifyEmail',
                     stack: error.stack
                 });
-            }
+            } */
 
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
         }

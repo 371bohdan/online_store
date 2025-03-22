@@ -22,8 +22,8 @@ app.use(cookieParser());
 app.use(express.json());
 
 //logging
-import { morganMiddleware } from './config/morgan/morganMiddleware';
-app.use(morganMiddleware);
+/* import { morganMiddleware } from './config/morgan/morganMiddleware';
+app.use(morganMiddleware); */
 
 //cors
 app.use((req: Request, res: Response, next: NextFunction) => {

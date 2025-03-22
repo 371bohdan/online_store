@@ -1,4 +1,4 @@
-import winston from "winston";
+/* import winston from "winston";
 import { ENV } from "../dotenv/env";
 import { Logtail } from "@logtail/node";
 import { LogtailTransport } from "@logtail/winston";
@@ -44,4 +44,4 @@ export const logger = winston.createLogger({
     level: ENV.LOG_LEVEL,
     format: combine(timestamp(), json()),
     transports: ENV.HOST_URI.startsWith('https://') ? prodTransports : localTransports
-});
+}); */
