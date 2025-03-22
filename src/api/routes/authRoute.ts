@@ -335,9 +335,9 @@ router.post('/logout', authController.logout);
  *                   schema:
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
-router.get('/google-oauth', passport.authenticate('google', { scope: ['profile', 'email'] }))
+router.get('/google-oauth', passport.authenticate('google', { scope: ['profile', 'email'], session: false }))
 
-router.get('/google-oauth/callback', passport.authenticate('google', { failureRedirect: '/' }),
+router.get('/google-oauth/callback', passport.authenticate('google', { failureRedirect: '/', session: false }),
     (req: Request, res: Response) => {
         const user = req.user as any;
         jwtService.setRefreshTokenInCookie(res, user.token);
