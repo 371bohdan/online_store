@@ -8,7 +8,7 @@ export interface IOrder extends Document {
     deliveryCompanyId: Types.ObjectId;
     firstName: string;
     lastName: string;
-    telephone: string;
+    phoneNumber: string;
     email: string;
     amountOrder: number;
     products: {
@@ -40,7 +40,7 @@ const OrderSchema = new Schema<IOrder>(
             maxlength: [20, 'cannot exceed 20 characters'],
         },
 
-        telephone: {
+        phoneNumber: {
             type: String,
             required: true,
             match: [/^\+?380\d{9}$/, 'Invalid format']

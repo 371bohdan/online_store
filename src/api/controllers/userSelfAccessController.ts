@@ -12,7 +12,12 @@ export const userSelfAccessController = {
 
     updateProfile: asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const bearerToken = req.headers.authorization as string;
-        const updatedUserProfile = await userSelfAccessService.updateProfile(bearerToken, req.body);
+        const updatedUserProfile = await userSelfAccessService.updateProfile(bearerToken, {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            password: req.body.password,
+            phoneNumber: req.body.phoneNumber
+        });
         res.json(updatedUserProfile);
     }),
 

@@ -9,6 +9,7 @@ export interface IUser extends mongoose.Document {
     password: string,
     firstName: string,
     lastName: string,
+    phoneNumber: string
     avatar: String;
     recoveryCode: UUID,
     recoveryCodeCreatedAt: Date,
@@ -52,6 +53,12 @@ const userSchema: mongoose.Schema<IUser> = new mongoose.Schema({
         required: false,
         minlength: [5, 'must be at least 5 characters long'],
         maxlength: [20, 'cannot exceed 20 characters'],
+    },
+
+    phoneNumber: {
+        type: String,
+        required: false,
+        match: [/^\+?380\d{9}$/, 'Invalid format']
     },
 
     avatar: {
