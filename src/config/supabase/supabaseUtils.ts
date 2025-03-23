@@ -1,4 +1,4 @@
-import supabase from '../../../config/supabase/supabaseConfig';
+import supabase from "./supabaseConfig";
 
 export const createBucketIfNotExists = async (bucketName: string): Promise<void> => {
     const { data, error } = await supabase.storage.getBucket(bucketName);

@@ -16,6 +16,12 @@ export const userSelfAccessController = {
         res.json(updatedUserProfile);
     }),
 
+    getCart: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const bearerToken = req.headers.authorization as string;
+        const cart = await userSelfAccessService.getCart(bearerToken);
+        res.json(cart);
+    }),
+
     getOrders: asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const bearerToken = req.headers.authorization as string;
         const orders = await userSelfAccessService.getOrders(bearerToken);

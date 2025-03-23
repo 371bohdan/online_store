@@ -35,7 +35,7 @@ const genericCrudController = (service: ReturnType<typeof genericCrudService>) =
 
     removeAll: asyncHandler(async (req: Request, res: Response): Promise<void> => {
         await service.removeAll();
-        res.status(StatusCodes.NO_CONTENT);
+        res.status(StatusCodes.NO_CONTENT).send();
     })
 })
 

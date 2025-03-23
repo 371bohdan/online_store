@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { jwtService } from "../../services/auxiliary/jwtService";
 import { UserRoles } from "../../models/enums/userRolesEnum";
 import AccessDeniedError from "../../errors/auth/AccessDeniedError";
+import errorHandler from "../errors/errorHandler";
 
 export const requireOwnerRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -13,6 +14,6 @@ export const requireOwnerRole = async (req: Request, res: Response, next: NextFu
         return next();
 
     } catch (error) {
-        next(error);
+        errorHandler(error, req, res, next);
     }
 }

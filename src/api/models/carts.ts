@@ -3,7 +3,7 @@ import mongooseToSwagger from "mongoose-to-swagger";
 import Product, { IProduct } from "./products";
 
 
-interface CartProduct {
+export interface ICartProduct {
     productId: mongoose.Types.ObjectId;
     quantity: number; // Виправлено на `quantity` для узгодження
 }
@@ -12,7 +12,7 @@ interface CartProduct {
 export interface ICart extends Document {
     userId: Types.ObjectId;
     totalPrice: number;
-    products: CartProduct[];
+    products: ICartProduct[];
 }
 
 // Схема для моделі Cart

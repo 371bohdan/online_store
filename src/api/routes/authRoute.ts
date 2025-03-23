@@ -313,6 +313,29 @@ router.post('/refresh', authController.refreshToken);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 router.post('/logout', authController.logout);
+
+/**
+ * @swagger
+ * /api/auth/google-oauth:
+ *  get:
+ *      tags:
+ *          - auth API
+ *      summary: Sign up or login with your google account
+ *      description: Only works if you login via the browser tab (not via Swagger)
+ *      responses:
+ *          200:
+ *              description: Success
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+ */
+router.get('/google-oauth', authController.googleOauth);
+
+router.get('/google-oauth/callback', authController.googleCallback);
+
 router.use(errorHandler);
 
 export default router;

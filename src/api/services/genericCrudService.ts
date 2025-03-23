@@ -1,6 +1,6 @@
 import { Document, HydratedDocument, Model } from "mongoose";
 import NotFoundError from "../errors/general/NotFoundError";
-import { swaggerService } from "./auxiliary/swaggerService";
+import { swaggerService } from "../../config/swagger/swaggerService";
 
 export const genericCrudService = <T extends Document>(Model: Model<T>) => ({
 
