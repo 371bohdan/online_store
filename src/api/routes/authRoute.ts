@@ -1,9 +1,6 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { authController } from "../controllers/authController";
 import errorHandler from "../middleware/errors/errorHandler";
-import passport from "passport";
-import { ENV } from "../../config/dotenv/env";
-import { jwtService } from "../services/auxiliary/jwtService";
 
 const router: express.Router = express.Router();
 
