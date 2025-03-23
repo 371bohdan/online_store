@@ -10,7 +10,7 @@ import BadRequestError from "../errors/general/BadRequestError";
 import AuthorizationError from "../errors/auth/AuthorizationError";
 import { jwtService } from "./auxiliary/jwtService";
 import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
-import { stripe } from "../../app";
+import { stripeService } from "../../config/stripe/stripeService";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
@@ -140,7 +140,7 @@ export const orderService = {
     },
 
     successfulPayment: async (sessionId: string): Promise<OrderDTO> => {
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const session = await stripeService.retrieveStripeSessionById(sessionId);
         const orderId = session.metadata?.orderId;
         await ensureItemExists(Order, '_id', orderId);
         const updatedOrder = await Order.findByIdAndUpdate(orderId, { isPaid: true }, { returnDocument: 'after' }) as IOrder;
@@ -148,7 +148,7 @@ export const orderService = {
     },
 
     unsuccessfulPayment: async (sessionId: string): Promise<OrderDTO> => {
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const session = await stripeService.retrieveStripeSessionById(sessionId);
         const orderId = session.metadata?.orderId;
         const order = await getItemByField(Order, '_id', orderId);
         return convertToOrderDTO(order);
