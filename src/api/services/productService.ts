@@ -55,8 +55,8 @@ export const productService = {
 
 
     createProduct: async (title: string, price: number, type_candle: string, size: number,
-        aroma: string, appointment: string, burning_time: string, short_describe: string,
-        color: string, material: string, shape: string, features: string, gift_packaging: boolean,
+        aroma: string, appointment: string, burning_time: string, short_describe: string, 
+        color: string, material: string, shape: string, features: string, gift_packaging: boolean, season_collection: boolean,
         stock: number, file: Express.Multer.File): Promise<HydratedDocument<IProduct>> => {
         const imageUrl = await imageService.uploadFile(file);
 
@@ -74,6 +74,7 @@ export const productService = {
             shape,
             features,
             gift_packaging,
+            season_collection,
             stock,
             image: imageUrl
         });
