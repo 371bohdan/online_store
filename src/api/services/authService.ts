@@ -17,11 +17,17 @@ import { ErrorResponse, getErrorResponse } from "../errors/ErrorResponse";
 import { StatusCodes } from "http-status-codes";
 import { ensureItemExists, getItemByField } from "./genericCrudService";
 //import { logger } from "../../config/winston/winstonConfig";
+import qs from 'qs';
+import { OAuth2Client } from "google-auth-library";
+import BadRequestError from "../errors/general/BadRequestError";
 
 const MESSAGE_TO_INTERACT_WITH_EMAIL: string = 'Please, check your email for the next steps!';
 /*const AUTH_LOGGER = logger.child({
     service: 'auth-service'
 });*/
+
+const GOOGLE_CALLBACK_URI = `${ENV.HOST_URI}/api/auth/google-oauth/callback`;
+const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID, ENV.GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URI);
 
 export const authService = {
     signUp: async (email: string, password: string): Promise<string> => {
@@ -196,6 +202,56 @@ export const authService = {
 
             return MESSAGE_TO_INTERACT_WITH_EMAIL;
         }
+    },
+
+    getGoogleOauthURI: () => {
+
+        return `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${ENV.GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URI}&scope=openid email profile`;
+    },
+
+    googleCallback: async (code: (string | qs.ParsedQs) | (string | qs.ParsedQs)[], res: Response) => {
+        const { tokens } = await client.getToken({
+            code: code as string,
+        });
+
+        const ticket = await client.verifyIdToken({
+            idToken: tokens.id_token!,
+            audience: ENV.GOOGLE_CLIENT_ID!
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload) {
+            throw new BadRequestError('Invalid ID token');
+        }
+
+        const email = payload.email;
+        const isVerified = payload.email_verified;
+        const displayName = payload.name;
+
+        let user = await User.findOne({ email })
+
+        if (!user) {
+            let firstName;
+            let lastName;
+
+            if (displayName && displayName.search(' ') !== -1) {
+
+                const firstAndLastNames = displayName.split(' ');
+                firstName = firstAndLastNames[0];
+                lastName = firstAndLastNames[1];
+
+            } else {
+                firstName = displayName;
+            }
+
+            user = await User.create({ email, isOAuth: true, isVerified, firstName, lastName });
+            user.isVerified ? mailController.sendRegistrationLetter(user.email) : mailController.sendRegistrAndVerifLetter(user.email, user.verificationCode);
+        }
+
+        const token = jwtService.generateJwtToken(user.id, JwtTokenTypes.REFRESH);
+        await User.findByIdAndUpdate(user.id, { refreshToken: token });
+        jwtService.setRefreshTokenInCookie(res, token);
+        return ENV.FRONT_PROD_URI;
     }
 }
 

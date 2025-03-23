@@ -42,12 +42,6 @@ mongoose.connect(ENV.MONGODB_URI, {
 import { initialiseOwnerAccount } from './api/services/authService';
 initialiseOwnerAccount();
 
-//passport
-import './config/passport/passportConfig';
-import passport from 'passport';
-
-app.use(passport.initialize());
-
 //user routes
 import userRoute from './api/routes/userRoute';
 app.use('/api/users', userRoute);
