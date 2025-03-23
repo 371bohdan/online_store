@@ -37,7 +37,7 @@ const router = express.Router();
  *               lastName:
  *                 type: string
  *                 description: Last name of the client
- *               telephone:
+ *               phoneNumber:
  *                 type: string
  *                 description: Client's phone number
  *                 example: 380123456789
@@ -63,7 +63,7 @@ const router = express.Router();
  *               - deliveryCompanyId
  *               - firstName
  *               - lastName
- *               - telephone
+ *               - phoneNumber
  *               - email
  *               - products
  *               - paymentMethod

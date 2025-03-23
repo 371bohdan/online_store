@@ -11,6 +11,8 @@ import AuthorizationError from "../errors/auth/AuthorizationError";
 import { jwtService } from "./auxiliary/jwtService";
 import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
 import { stripeService } from "../../config/stripe/stripeService";
+import User, { IUser } from "../models/users";
+import { getUserByEmail, isUserExistsByEmail } from "./userService";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
@@ -32,7 +34,7 @@ export const orderService = {
             deliveryCompanyId,
             firstName,
             lastName,
-            telephone,
+            phoneNumber,
             email,
             paymentMethod
         } = body;
@@ -47,6 +49,7 @@ export const orderService = {
 
             if (!product) throw new NotFoundError(`Product with ID ${item.productId} not found`);
             if (item.quantity <= 0) throw new BadRequestError('Quantity of product cannot be 0 or less');
+            if (product.stock - item.quantity < 0) throw new BadRequestError(`We don't have the '${product.title}' product in stock in ${item.quantity} quantity`)
 
             totalAmount += product.price * item.quantity;
         }
@@ -55,18 +58,23 @@ export const orderService = {
             deliveryCompanyId,
             firstName,
             lastName,
-            telephone,
-            email: user ? user.email : email,
+            phoneNumber,
+            email: email ? email : user?.email,
             products,
             amountOrder: totalAmount,
             paymentMethod
         };
 
+        const order = new Order(orderData);
+
         if (user) {
             await Cart.findOneAndUpdate({ userId: user._id }, { products: [], totalPrice: 0 });
+            order.userId = user.id;
+
+        } else if (await isUserExistsByEmail(email)) {
+            order.userId = (await getUserByEmail(email)).id;
         }
 
-        const order = new Order(orderData);
         const savedOrder = await order.save();
 
         // Оновлення запасів товарів
@@ -76,19 +84,17 @@ export const orderService = {
             });
         }
 
-        if (user) {
-            // Відправка email з деталями замовлення
-            const orderDetails = {
-                firstName,
-                lastName,
-                telephone,
-                email,
-                products,
-                amountOrder: totalAmount
-            };
-            mailController.sendOrderConfirmation(user.email, orderDetails);
-        }
+        // Відправка email з деталями замовлення
+        const orderDetails = {
+            firstName,
+            lastName,
+            phoneNumber,
+            email,
+            products,
+            amountOrder: totalAmount
+        };
 
+        mailController.sendOrderConfirmation(orderData.email as string, orderDetails);
         return convertToOrderDTO(savedOrder);
     },
 
@@ -104,7 +110,7 @@ export const orderService = {
         }
 
         if (newStatus === OrderStatuses.CANCELED && currentStatus !== OrderStatuses.RECEIVED) {
-            return setStatus(orderId, newStatus);
+            return convertToOrderDTO(await setStatus(orderId, newStatus));
         }
 
         switch (currentStatus as OrderStatuses) {
@@ -167,4 +173,18 @@ async function setStatus(orderId: string, status: OrderStatuses): Promise<IOrder
 
     mailController.sendOrderStatusChangedLetter(updatedOrder.email, status);
     return updatedOrder;
+}
+
+/**
+ * Attaches user to his orders (point: if user ordered as a guest (without authentication), but later he created an account 
+ * and this method will attach his order to his account)
+ * @param user The user
+ */
+export async function attachUserToHisOrders(user: IUser): Promise<void> {
+    await ensureItemExists(User, '_id', user._id);
+    const orders = await Order.find({ email: user.email, userId: undefined });
+
+    if (orders.length > 0) {
+        orders.map(async order => await Order.findByIdAndUpdate(order._id, { userId: user._id }))
+    }
 }

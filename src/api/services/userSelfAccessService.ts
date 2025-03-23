@@ -15,23 +15,33 @@ export const userSelfAccessService = {
         return convertToUserDTO(user);
     },
 
-    updateProfile: async (bearerToken: string, body: any): Promise<UserDTO> => {
-        const user = await jwtService.getUserFromBearerToken(bearerToken);
-        user.firstName = body.firstName;
-        user.lastName = body.lastName;
+    updateProfile: async (bearerToken: string, userProps: {
+        firstName: string,
+        lastName: string,
+        password?: string,
+        phoneNumber: string
+    }): Promise<UserDTO> => {
 
-        if (body.password) {
-            const isTheSamePassword = bcrypt.compareSync(body.password, user.password);
+        const user = await jwtService.getUserFromBearerToken(bearerToken);
+
+        if (userProps.password) {
+            if (user.firstName !== userProps.firstName) user.firstName = userProps.firstName;
+            if (user.lastName !== userProps.lastName) user.lastName = userProps.lastName;
+            if (user.phoneNumber !== userProps.phoneNumber) user.phoneNumber = userProps.phoneNumber;
+
+            const isTheSamePassword = bcrypt.compareSync(userProps.password, user.password);
             if (!isTheSamePassword) {
                 mailController.sendPasswordChangedLetter(user.email);
-                user.password = body.password;
+                user.password = userProps.password;
                 await user.save();
+                return convertToUserDTO(user);
             }
         }
 
         const updatedUser = await User.findByIdAndUpdate(user._id, {
-            firstName: body.firstName,
-            lastName: body.lastName
+            firstName: userProps.firstName,
+            lastName: userProps.lastName,
+            phoneNumber: userProps.phoneNumber
         }, { returnDocument: 'after' }) as IUser;
 
         return convertToUserDTO(updatedUser);

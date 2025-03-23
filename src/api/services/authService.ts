@@ -20,6 +20,7 @@ import { ensureItemExists, getItemByField } from "./genericCrudService";
 import qs from 'qs';
 import { OAuth2Client } from "google-auth-library";
 import BadRequestError from "../errors/general/BadRequestError";
+import { attachUserToHisOrders } from "./orderService";
 
 const MESSAGE_TO_INTERACT_WITH_EMAIL: string = 'Please, check your email for the next steps!';
 /*const AUTH_LOGGER = logger.child({
@@ -33,7 +34,7 @@ export const authService = {
     signUp: async (email: string, password: string): Promise<string> => {
         const user = new User({ email, password });
         const createdUser = await user.save({ validateBeforeSave: true });
-
+        await attachUserToHisOrders(createdUser);
         mailController.sendRegistrAndVerifLetter(createdUser.email, createdUser.verificationCode);
         return MESSAGE_TO_INTERACT_WITH_EMAIL;
     },
@@ -205,7 +206,6 @@ export const authService = {
     },
 
     getGoogleOauthURI: () => {
-
         return `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${ENV.GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URI}&scope=openid email profile`;
     },
 
@@ -246,6 +246,7 @@ export const authService = {
 
             user = await User.create({ email, isOAuth: true, isVerified, firstName, lastName });
             user.isVerified ? mailController.sendRegistrationLetter(user.email) : mailController.sendRegistrAndVerifLetter(user.email, user.verificationCode);
+            await attachUserToHisOrders(user);
         }
 
         const token = jwtService.generateJwtToken(user.id, JwtTokenTypes.REFRESH);
