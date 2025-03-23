@@ -4,6 +4,7 @@ import genericCrudRoute from "./genericCrudRoute";
 import Cart, { ICart } from "../models/carts";
 import { Model } from "mongoose";
 import errorHandler from "../middleware/errors/errorHandler";
+import requireAuth from "../middleware/auth/requireAuth";
 
 const router: express.Router = express.Router();
 
@@ -14,6 +15,8 @@ const router: express.Router = express.Router();
  *     tags:
  *       - carts API
  *     summary: Add a product to the cart
+ *     security:
+ *       - bearerAuth: [] 
  *     description: Adds a product to the user's cart. The cart is identified either by `userId` (for authenticated users) or `sessionId` (for guest users).
  *     requestBody:
  *       required: true
@@ -22,9 +25,6 @@ const router: express.Router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *                 description: (Optional) The user ID associated with the cart (for authenticated users)
  *               productId:
  *                 type: string
  *                 description: The ID of the product to add
@@ -38,24 +38,34 @@ const router: express.Router = express.Router();
  *       200:
  *         description: Product added to cart successfully
  *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Confirmation message
- *                 cart:
- *                   type: object
- *                   description: The updated cart object
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Dto/CartDto'
  *       400:
  *         description: Bad request (missing or invalid parameters)
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/ErrorResponse/BadRequest'
  *       404:
  *         description: Cart not found
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                      allOf:
+ *                          - $ref: '#/components/schemas/ErrorResponse/NotFound'
+ *                          - type: object
+ *                            properties:
+ *                              message:
+ *                                  example: "Cart not found"
  *       500:
  *         description: Internal server error
+ *         content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
-router.post('/add', cartController.addProduct);
+router.post('/add', requireAuth, cartController.addProduct);
 
 
 /**
@@ -65,6 +75,8 @@ router.post('/add', cartController.addProduct);
  *     tags:
  *       - carts API
  *     summary: Remove a product from the cart or update its quantity
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -72,9 +84,6 @@ router.post('/add', cartController.addProduct);
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *                 description: (Optional) The user ID associated with the cart (for authenticated users)
  *               productId:
  *                 type: string
  *                 description: The ID of the product to remove
@@ -83,38 +92,13 @@ router.post('/add', cartController.addProduct);
  *                 description: The quantity of the product to remove. Defaults to 1 if not provided.
  *             required:
  *               - productId
- *               - userId
  *     responses:
  *       200:
  *         description: Successfully removed product from the cart
  *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Product removed from cart successfully
- *                 cart:
- *                   type: object
- *                   properties:
- *                     userId:
- *                       type: string
- *                       description: The ID of the user
- *                     sessionId:
- *                       type: string
- *                       description: The session ID
- *                     products:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           productId:
- *                             type: string
- *                             description: The product ID
- *                           quantity:
- *                             type: integer
- *                             description: The quantity of the product in the cart
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Dto/CartDto'
  *       400:
  *         description: Bad request, missing or invalid parameters
  *         content:
@@ -148,7 +132,7 @@ router.post('/add', cartController.addProduct);
  *                 error:
  *                   type: object
  */
-router.post("/remove", cartController.removeProduct);
+router.post("/remove", requireAuth, cartController.removeProduct);
 
 router.use(genericCrudRoute(Cart as Model<ICart>, "carts", ['get', 'post', 'put', 'delete']));
 router.use(errorHandler);

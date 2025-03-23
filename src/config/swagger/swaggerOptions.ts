@@ -1,4 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import { orderSwaggerSchema } from '../../api/models/orders';
+import Product, { productSwaggerSchema } from '../../api/models/products';
+import { userSwaggerSchema } from '../../api/models/users';
 
 const options = {
     definition: {
@@ -14,11 +17,138 @@ const options = {
                     scheme: 'bearer',
                     bearerFormat: 'JWT'
                 }
+            },
+
+            schemas: {
+                ErrorResponse: {
+                    BadRequest: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string', example: 'Bad request' },
+                            statusCode: { type: 'number', example: 400 },
+                            message: { type: 'string', example: "you've missed a required property (or other error message)" },
+                            date: { type: 'string', example: 'dd.mm.yyyy, hh:mm:ss' }
+                        }
+                    },
+
+                    Unauthorised: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string', example: 'Unauthorised' },
+                            statusCode: { type: 'number', example: 401 },
+                            message: { type: 'string', example: "jwt must be provided (or other error message)" },
+                            date: { type: 'string', example: 'dd.mm.yyyy, hh:mm:ss' }
+                        }
+                    },
+
+                    NotFound: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string', example: 'Not found' },
+                            statusCode: { type: 'number', example: 401 },
+                            message: { type: 'string', example: "the model not found." },
+                            date: { type: 'string', example: 'dd.mm.yyyy, hh:mm:ss' }
+                        }
+                    },
+
+                    InternalServerError: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string', example: 'Internal Server Error' },
+                            statusCode: { type: 'number', example: 500 },
+                            message: { type: 'string', example: "Sorry, your request cannot be processed" },
+                            date: { type: 'string', example: 'dd.mm.yyyy, hh:mm:ss' }
+                        }
+                    }
+                },
+
+                AuthApi: {
+                    Message: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', example: 'Please, check your email for the next steps!' },
+                        }
+                    },
+
+                    Token: {
+                        type: 'object',
+                        properties: {
+                            token: { type: 'string', example: '<access_token>' },
+                        }
+                    }
+                },
+
+                Enum: {
+                    type: 'object',
+                    properties: {
+                        array: { type: 'string[]', example: "['first element', 'second', ...]" }
+                    }
+                },
+
+                Models: {
+                    Order: orderSwaggerSchema,
+
+                    Product: productSwaggerSchema,
+
+                    User: userSwaggerSchema,
+                },
+
+                Dto: {
+                    UserDto: {
+                        type: 'object',
+                        properties: {
+                            email: { type: 'string', example: 'example@gmail.com' },
+                            firstName: { type: 'string', example: "FirstName" },
+                            lastName: { type: 'string', example: 'LastName' }
+                        }
+                    },
+
+                    CartDto: {
+                        type: 'object',
+                        properties: {
+                            totalPrice: { type: 'number', example: 1000 },
+                            products: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        productId: { type: 'string', example: '67b1cf2abb50ec824a8390de' },
+                                        quantity: { type: 'number', example: 1 }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    OrderDto: {
+                        type: 'object',
+                        properties: {
+                            products: { type: 'array', example: '[]' },
+                            firstName: { type: 'string', example: "FirstName" },
+                            lastName: { type: 'string', example: 'LastName' },
+                            telephone: { type: 'string', example: "380123456789" },
+                            email: { type: 'string', example: 'example@gmail.com' },
+                            amountOrder: { type: 'number', example: "1000" },
+                            status: { type: 'string', example: 'processing' },
+                            paymentMethod: { type: 'string', example: 'cash' },
+                            isPaid: { type: 'boolean', example: 'false' }
+                        }
+                    }
+                },
+
+                Stripe: {
+                    PaymentSession: {
+                        type: 'object',
+                        properties: {
+                            uri: { type: 'string', example: 'https://checkout.stripe.com/c/pay/<session_key>' }
+                        }
+                    }
+                }
             }
         },
     },
 
-    apis: ['./src/api/routes/*.ts']
+    apis: ['./src/api/routes/*.ts', './src/config/stripe/stripeRoute.ts']
 }
 
 export const swaggerUiOptions = {

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { jwtService } from "../../services/auxiliary/jwtService";
 import { JwtTokenTypes } from "../../models/enums/jwtTokenTypesEnum";
+import errorHandler from "../errors/errorHandler";
 
 const requireAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -9,7 +10,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction): Pro
             next();
         }
     } catch (error) {
-        next(error);
+        errorHandler(error, req, res, next);
     }
 }
 

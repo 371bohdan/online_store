@@ -56,8 +56,48 @@ const envSchema = zod.object({
         .regex(/^\d+$/, 'Must be a number')
         .transform((val) => Number(val)),
 
-    OWNER_EMAIL: zod.string().email('Invalid email format')
+    OWNER_EMAIL: zod.string().email('Invalid email format'),
 
+    MAIL_CODES_EXPIRY_TIME: zod.string()
+        .regex(/^\d+$/, 'Must be a number')
+        .transform((val) => Number(val)),
+
+    LOG_LEVEL: zod.string(),
+
+    FRONT_PROD_URI: zod.string().refine(
+        (url) => url.startsWith('https://'),
+        'Invalid front prod URI'
+    ),
+
+    LOGTAIL_TOKEN: zod.string().refine(
+        (token) => token.length === 24,
+        'Incorrect length of logtail token'
+    ),
+
+    LOGTAIL_ENDPOINT: zod.string().refine(
+        (endpoint) => endpoint.startsWith('https://'),
+        'Invalid logtail endpoint'
+    ),
+
+    STRIPE_SECRET_KEY: zod.string().refine(
+        key => key.length === 107 && key.startsWith('sk_test_'),
+        'Invalid stripe secret key'
+    ),
+
+    GOOGLE_CLIENT_ID: zod.string().refine(
+        id => id.endsWith('.apps.googleusercontent.com') && id.length === 72,
+        'Invalid google client id'
+    ),
+
+    GOOGLE_CLIENT_SECRET: zod.string().refine(
+        secret => secret.length === 35,
+        'Invalid google client secret'
+    ),
+
+    SESSION_SECRET: zod.string().refine(
+        secret => secret.length >= 15,
+        'Invalid session secret'
+    )
 });
 
 type Env = zod.infer<typeof envSchema>;
