@@ -1,4 +1,4 @@
-import morgan from 'morgan';
+/* import morgan from 'morgan';
 import { logger } from '../winston/winstonConfig';
 
 export const morganMiddleware = morgan(
@@ -21,4 +21,4 @@ export const morganMiddleware = morgan(
             }
         }
     }
-)
+) */

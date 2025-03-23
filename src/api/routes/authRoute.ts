@@ -1,9 +1,6 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { authController } from "../controllers/authController";
 import errorHandler from "../middleware/errors/errorHandler";
-import passport from "passport";
-import { ENV } from "../../config/dotenv/env";
-import { jwtService } from "../services/auxiliary/jwtService";
 
 const router: express.Router = express.Router();
 
@@ -335,15 +332,9 @@ router.post('/logout', authController.logout);
  *                   schema:
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
-router.get('/google-oauth', passport.authenticate('google', { scope: ['profile', 'email'] }))
+router.get('/google-oauth', authController.googleOauth);
 
-router.get('/google-oauth/callback', passport.authenticate('google', { failureRedirect: '/' }),
-    (req: Request, res: Response) => {
-        const user = req.user as any;
-        jwtService.setRefreshTokenInCookie(res, user.token);
-        res.redirect(`${ENV.FRONT_PROD_URI}`);
-    }
-)
+router.get('/google-oauth/callback', authController.googleCallback);
 
 router.use(errorHandler);
 
