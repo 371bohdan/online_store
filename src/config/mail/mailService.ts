@@ -2,9 +2,24 @@ import nodemailer from 'nodemailer';
 import { ENV } from '../dotenv/env';
 import { UUID } from 'crypto';
 import { OrderStatuses } from '../../api/models/enums/orderStatusesEnum';
+import { compile } from 'handlebars';
+import fs from 'fs';
+import path from 'path';
+
 
 const VERIFY_EMAIL_URI: string = ENV.HOST_URI + '/api/auth/verifyEmail';
 const RECOVER_PASSWORD_URI: string = ENV.HOST_URI + '/api/auth/passwordRecovery';
+
+
+const loadTemplate = (templateName: string, context: Record<string, any>): string => {
+    // const templatePath = path.resolve(__dirname, `./views/${templateName}.html`);
+    const templateSource = fs.readFileSync(`src/config/mail/views/order_mail.html`, 'utf8');
+    const template = compile(templateSource);
+    return template(context, {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true,
+    });
+  };
 
 export const mailService = {
     sendMail: (to: String, subject: String, message: String): void => {
@@ -18,7 +33,8 @@ export const mailService = {
             from: process.env.SMTP_EMAIL,
             to: email,
             subject: "Your Order Confirmation",
-            text: `Thank you for your order! Here are the details:\n\n${JSON.stringify(orderDetails, null, 2)}`,
+            // text: `Thank you for your order! Here are the details:\n\n${JSON.stringify(orderDetails, null, 2)}`,
+            html: loadTemplate(`order_mail.html`, orderDetails)
         };
 
         const transporter = getTransporter();
@@ -82,12 +98,13 @@ export const mailService = {
     }
 }
 
-function getMailOptions(to: String, subject: String, message: String): Object {
+function getMailOptions(to: String, subject: String, message: String, html?: String): Object {
     return {
         from: ENV.MAIL_USER,
         to,
         subject,
-        text: message
+        text: message,
+        ...(html && { html })
     }
 }
 
