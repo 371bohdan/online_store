@@ -20,8 +20,8 @@ const productController = {
 
     createProduct: asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const {
-            title, price, type_candle, size, aroma, appointment, burning_time,
-            short_describe, color, material, shape, features, gift_packaging, stock
+            title, price, type_candle, size, aroma, appointment, burning_time, 
+            short_describe, color, material, shape, features, gift_packaging, season_collection, stock
         } = req.body;
         const file = req.file;
 
@@ -30,10 +30,10 @@ const productController = {
         }
 
         const createdProduct = await productService.createProduct(
-            title, price, type_candle, size, aroma, appointment, burning_time,
-            short_describe, color, material, shape, features, gift_packaging, stock, file
-        );
+            title, price, type_candle, size, aroma, appointment, burning_time, 
+            short_describe, color, material, shape, features, gift_packaging, season_collection, stock, file
 
+        );
         res.status(StatusCodes.CREATED).json(createdProduct);
     })
 };
