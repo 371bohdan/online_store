@@ -149,6 +149,9 @@ router.get('/', productController.productFilterSort);
  *                 gift_packaging:
  *                   type: boolean
  *                   example: true
+ *                 season_collection:
+ *                   type: boolean
+ *                   example: true
  *                 file:
  *                   type: array
  *                   items:
