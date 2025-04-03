@@ -5,6 +5,7 @@ import swaggerUIPath from 'swagger-ui-express';
 import { swaggerOptions, swaggerUiOptions } from './config/swagger/swaggerOptions';
 import { ENV } from './config/dotenv/env';
 import cookieParser from "cookie-parser";
+import cors from 'cors'
 
 //entry point
 const app = express();
@@ -26,11 +27,9 @@ app.use(express.json());
 app.use(morganMiddleware); */
 
 //cors
-app.use((req: Request, res: Response, next: NextFunction) => {
-    res.header('Access-Control-Allow-Origin', ['http://localhost:5173', ENV.FRONT_PROD_URI]);
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-    next();
-});
+app.use(cors({
+    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI]
+}));
 
 //database connection
 mongoose.connect(ENV.MONGODB_URI, {
