@@ -4,6 +4,8 @@ import upload from "../middleware/upload/uploadMiddleweare";
 import Product, { IProduct } from "../models/products";
 import { Model } from "mongoose";
 import genericCrudRoute from "./genericCrudRoute";
+import requireAdminOrOwnerRole  from "../middleware/auth/requireAdminOrOwnerRole"
+import requireAuth  from "../middleware/auth/requireAdminOrOwnerRole"
 
 const router: express.Router = express.Router();
 
@@ -146,6 +148,12 @@ router.get('/', productController.productFilterSort);
  *                   type: string
  *                   example: "Еко-дружні"
  *                   enum: ["Натуральні інгредієнти", "Еко-дружні", "Антиалергічні", "Для подарунка", "Для особливих моментів"]
+ *                 composition:
+ *                   type: string
+ *                   example: "Склад: бджолиний віск, лавандовий ефір"
+ *                 care:
+ *                   type: string
+ *                   example: "Термін дії: 2 роки, зберігати в закритому приміщенні"
  *                 gift_packaging:
  *                   type: boolean
  *                   example: true
@@ -184,7 +192,7 @@ router.get('/', productController.productFilterSort);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 
-router.post('/', upload.single('file'), productController.createProduct);
+router.post('/', upload.array('file', 10), productController.createProduct);
 
 router.use(genericCrudRoute(Product as Model<IProduct>, "products", []));
 export default router;

@@ -133,6 +133,13 @@ const options = {
                             paymentMethod: { type: 'string', example: 'cash' },
                             isPaid: { type: 'boolean', example: 'false' }
                         }
+                    },
+
+                    ProductDto: {
+                        type: 'object',
+                        propeties: {
+                            
+                        }
                     }
                 },
 
