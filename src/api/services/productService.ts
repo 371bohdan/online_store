@@ -88,6 +88,27 @@ export const productService = {
             updateData.image = newImageUrls;
         }
 
+        // Перевіряємо кожне поле в updateData і оновлюємо тільки визначені значення
+        for (const key in updateData) {
+            const value = updateData[key as keyof Partial<IProduct>];
+        
+            // Видаляємо поля, якщо це:
+            // - undefined
+            // - рядок з "undefined", "undefiend", "null" (на всяк випадок)
+            // - -1 (як маркер неактивного значення)
+            if (
+                value === undefined ||
+                value === null ||
+                value === -1 ||
+                value === '-1' ||
+                value === 'undefined' ||
+                value === 'undefiend' || // поширена опечатка
+                value === 'null'
+            ) {
+                delete updateData[key as keyof Partial<IProduct>];
+            }
+        }
+
         const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
         if (!updatedProduct) throw new NotFoundError(`Product with ID ${productId} not found`);
         return updatedProduct;
