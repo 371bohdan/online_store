@@ -28,7 +28,8 @@ app.use(morganMiddleware); */
 
 //cors
 app.use(cors({
-    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI]
+    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI],
+    credentials: true
 }));
 
 //database connection
