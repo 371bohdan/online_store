@@ -78,6 +78,6 @@ export async function getItemByField<T>(model: Model<T>, field: keyof T, value: 
  */
 export async function ensureItemExists<T>(model: Model<T>, field: keyof T, value: any): Promise<void> {
     if (!await model.exists({ [field]: value } as Partial<T>)) {
-        throw new NotFoundError(Model.modelName);
+        throw new NotFoundError(model.modelName);
     }
 }
