@@ -1,4 +1,3 @@
-import NotFoundError from "../errors/general/NotFoundError";
 import { UserRoles } from "../models/enums/userRolesEnum";
 import User, { IUser } from "../models/users";
 import BadRequestError from "../errors/general/BadRequestError";
@@ -28,4 +27,22 @@ export const userService = {
     getAllRoles: (): Array<UserRoles> => {
         return Object.values(UserRoles);
     }
+}
+
+/**
+ * Returns true if user exists in application database, false if not
+ * @param email The field used for the user search
+ */
+export async function isUserExistsByEmail(email: string): Promise<boolean> {
+    const user = await User.exists({ email });
+    return !user ? false : true;
+}
+
+/**
+ * Returns user if he exists in application database, error if not
+ * @param email The field used for the user search
+ */
+export async function getUserByEmail(email: string): Promise<IUser> {
+    ensureItemExists(User, 'email', email);
+    return await User.findOne({ email }) as IUser;
 }

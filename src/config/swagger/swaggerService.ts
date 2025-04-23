@@ -1,6 +1,5 @@
 import { swaggerOptions } from "./swaggerOptions";
 import { cartSwaggerSchema } from "../../api/models/carts";
-import { deliverySwaggerSchema } from "../../api/models/deliveries";
 import { orderSwaggerSchema } from "../../api/models/orders";
 import { productSwaggerSchema } from "../../api/models/products";
 import { userSwaggerSchema } from "../../api/models/users";
@@ -75,8 +74,6 @@ export const swaggerService = {
                 return productSwaggerSchema;
             case 'carts':
                 return cartSwaggerSchema;
-            case 'deliveries':
-                return deliverySwaggerSchema;
             case 'orders':
                 return orderSwaggerSchema;
             default:

@@ -7,6 +7,7 @@ import { Response } from "express";
 import ms from "ms";
 import User, { IUser } from "../../models/users";
 import { getItemByField } from "../genericCrudService";
+import BadRequestError from "../../errors/general/BadRequestError";
 
 export const jwtService = {
     /**
@@ -22,13 +23,19 @@ export const jwtService = {
     },
 
     /**
-    * Returns JWT token without authentication scheme ('Bearer' part before a token)
+    * Returns JWT token without authentication scheme ('Bearer ' part before a token)
     * @param bearerToken Expected raw token from 'Authorization' header
+    * @throws the BadRequestError error if the authentication scheme is not 'Bearer '
     * @throws The authorization error if token is not presented
     */
     getJwtTokenWithoutAuthScheme: (bearerToken: string | undefined): string => {
         if (bearerToken === undefined || bearerToken.length === 0) {
             throw new AuthorizationError("You don't have an auth token");
+        }
+
+        const authScheme = bearerToken.substring(0, 7);
+        if (authScheme !== 'Bearer ') {
+            throw new BadRequestError("You've passed the bearer token without a correct authentication scheme ('Bearer ')")
         }
 
         return bearerToken.substring(7, bearerToken.length);
@@ -79,7 +86,7 @@ export const jwtService = {
     setRefreshTokenInCookie: (res: Response, refreshToken: string) => {
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
-            sameSite: 'strict',
+            sameSite: 'none', //strict
             secure: true,
             maxAge: ms(`${ENV.JWT_REFRESH_TOKEN_EXPIRES}d`)
         });
