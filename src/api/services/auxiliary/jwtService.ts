@@ -86,7 +86,7 @@ export const jwtService = {
     setRefreshTokenInCookie: (res: Response, refreshToken: string) => {
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
-            sameSite: 'strict',
+            sameSite: 'none', //strict
             secure: true,
             maxAge: ms(`${ENV.JWT_REFRESH_TOKEN_EXPIRES}d`)
         });
