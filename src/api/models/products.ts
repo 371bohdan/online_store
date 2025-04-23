@@ -17,7 +17,10 @@ export interface IProduct extends Document {
     material: string;
     shape: string;
     features: string;
+    composition: string;
+    care: string
     gift_packaging: boolean;
+    season_collection: boolean;
     comments: Types.ObjectId[];
     stock: number;
     rate_avg_product: number;
@@ -44,7 +47,10 @@ const ProductSchema = new Schema<IProduct>({
     material: { type: String, required: true, enum: ['Кокосовий віск', 'Бджолиний віск', 'Парафін', 'Соєвий віск'] },
     shape: { type: String, required: true, enum: ['Спіральна', 'Квадратна'] },
     features: { type: String, required: true, enum: ['Натуральні інгредієнти', 'Еко-дружні', 'Антиалергічні', 'Для подарунка', 'Для особливих моментів'] },
+    composition: { type: String, required: true },
+    care: { type: String, required: true },
     gift_packaging: { type: Boolean, required: true },
+    season_collection: { type: Boolean, required: true },
     comments: { type: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], default: [] },
     stock: { type: Number, required: true, min: 0 },
     rate_avg_product: { type: Number, default: 0 },

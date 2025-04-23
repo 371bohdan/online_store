@@ -15,11 +15,10 @@ const errorHandler = (error: any, req: Request, res: Response, next: NextFunctio
         return;
     }
 
-    if (message.includes('already used') || message.startsWith('User validation failed')) {
+    if (message.includes('already used') || (message + '').match(/^\S+\svalidation\sfailed/)) {
         statusCode = StatusCodes.BAD_REQUEST;
-    }
 
-    if (error instanceof JsonWebTokenError) {
+    } else if (error instanceof JsonWebTokenError) {
         statusCode = StatusCodes.UNAUTHORIZED;
     }
 

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Thanks for Your Order!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Базові стилі */
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(180deg, #fff8e1, #e9c08a);
+            margin: 0;
+            padding: 20px;
+            color: #4a4a4a;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #a7570f;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #4a4a4a;
+        }
+        .bestr {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            color: #3e566d;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        div {
+            border-radius: 12px;
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        a {
+            display: inline-block;
+            background-color: #f4a261;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, #d4a373, #fff8e1, #d4a373);
+            margin: 20px 0;
+        }
+
+        /* Стилі для мобільних пристроїв */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+            h2 {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+            p {
+                font-size: 14px;
+            }
+            .bestr {
+                font-size: 16px;
+            }
+            div {
+                padding: 10px;
+            }
+            a {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🕯️ Thanks for your order{{#if firstName}} {{firstName}} {{/if}}! 🕯️</h1>
+
+    <h2>Order Details</h2>
+    <div>
+        {{#each products}}
+            <div>
+                <p><strong>Product ID:</strong> {{this.productId}}</p>
+                <p><strong>Quantity:</strong> {{this.quantity}}</p>
+            </div>
+        {{/each}}
+        <p><strong>Total:</strong> {{amountOrder}} UAH</p>
+    </div>
+    <hr>
+    <p class="bestr">Best regards, lumenstore</p>
+</body>
+</html>

@@ -4,6 +4,8 @@ import upload from "../middleware/upload/uploadMiddleweare";
 import Product, { IProduct } from "../models/products";
 import { Model } from "mongoose";
 import genericCrudRoute from "./genericCrudRoute";
+import requireAdminOrOwnerRole  from "../middleware/auth/requireAdminOrOwnerRole"
+import requireAuth  from "../middleware/auth/requireAdminOrOwnerRole"
 
 const router: express.Router = express.Router();
 
@@ -90,6 +92,8 @@ router.get('/', productController.productFilterSort);
  *     post:
  *       tags:
  *         - products API
+ *       security:
+ *         - bearerAuth: []
  *       summary: Створення нового продукту
  *       consumes:
  *         - multipart/form-data
@@ -146,7 +150,16 @@ router.get('/', productController.productFilterSort);
  *                   type: string
  *                   example: "Еко-дружні"
  *                   enum: ["Натуральні інгредієнти", "Еко-дружні", "Антиалергічні", "Для подарунка", "Для особливих моментів"]
+ *                 composition:
+ *                   type: string
+ *                   example: "Склад: бджолиний віск, лавандовий ефір"
+ *                 care:
+ *                   type: string
+ *                   example: "Термін дії: 2 роки, зберігати в закритому приміщенні"
  *                 gift_packaging:
+ *                   type: boolean
+ *                   example: true
+ *                 season_collection:
  *                   type: boolean
  *                   example: true
  *                 file:
@@ -181,9 +194,149 @@ router.get('/', productController.productFilterSort);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'
  */
 
-router.post('/', upload.single('file'), productController.createProduct);
+router.post('/', requireAdminOrOwnerRole, upload.array('file', 10), productController.createProduct);
 
-router.use(genericCrudRoute(Product as Model<IProduct>, "products", []));
+/**
+ * @swagger
+ * paths:
+ *   /api/products/{id}:
+ *     patch:
+ *       summary: Часткове оновлення продукту
+ *       tags:
+ *         - products API
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             description: ID продукту
+ *       requestBody:
+ *         required: false
+ *         content:
+ *           multipart/form-data:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 title:
+ *                   type: string
+ *                   description: Назва продукту
+ *                   example: undefined
+ *                   required: false
+ *                 price:
+ *                   type: number
+ *                   description: Ціна продукту
+ *                   example: undefined
+ *                   required: false
+ *                 type_candle:
+ *                   type: string
+ *                   description: Тип свічки
+ *                   example: undefined
+ *                   enum: ["Декоративні", "Набори свічок", "Плаваючі", "Розсипні", "Фігурні", "Свічки в баночках", "Класичні", "Ручна робота", "Бездимні", "Ароматичні свічки"]
+ *                   required: false
+ *                 size:
+ *                   type: number
+ *                   description: Розмір свічки
+ *                   example: -1
+ *                   required: false
+ *                 aroma:
+ *                   type: string
+ *                   example: undefiend
+ *                   enum: ["Ранкова кава", "Вечірня хатка", "Після дощу в лісі", "Теплий хліб", "З дерев'яними гнотами", "Медова теплість", "Свічки без аромату", "Тепле молоко", "Золота осінь", "Свіжість садка", "Літній вечір"]
+ *                   description: Аромат свічки
+ *                   required: false
+ *                 appointment:
+ *                   type: string
+ *                   example: undefiend
+ *                   enum: ["Для декору", "Для релаксу", "Для масажу"]
+ *                   description: Призначення свічки
+ *                   required: false
+ *                 burning_time:
+ *                   type: string
+ *                   description: Час горіння свічки
+ *                   example: undefiend
+ *                   required: false
+ *                 short_describe:
+ *                   type: string
+ *                   description: Короткий опис продукту
+ *                   example: undefiend
+ *                   required: false
+ *                 color:
+ *                   type: string
+ *                   description: Колір свічки
+ *                   example: undefiend
+ *                   enum: ["Зелений", "Червоний", "Чорний", "Кремовий", "Білий", "Золотий", "Пастельні тони"]
+ *                   required: false
+ *                 material:
+ *                   type: string
+ *                   description: Матеріал свічки
+ *                   example: undefiend
+ *                   enum: ["Кокосовий віск", "Бджолиний віск", "Парафін", "Соєвий віск"]
+ *                   required: false
+ *                 shape:
+ *                   type: string
+ *                   description: Форма свічки
+ *                   example: undefiend
+ *                   enum: ["Спіральна", "Квадратна"]
+ *                   required: false
+ *                 features:
+ *                   type: string
+ *                   description: Особливості продукту
+ *                   example: undefiend
+ *                   enum: ["Натуральні інгредієнти", "Еко-дружні", "Антиалергічні", "Для подарунка", "Для особливих моментів"]
+ *                   required: false
+ *                 composition:
+ *                   type: string
+ *                   description: Склад свічки
+ *                   example: undefiend
+ *                   required: false
+ *                 care:
+ *                   type: string
+ *                   description: Догляд за продуктом
+ *                   example: undefiend
+ *                   required: false
+ *                 gift_packaging:
+ *                   type: boolean
+ *                   description: Наявність подарункової упаковки
+ *                   example: undefiend
+ *                   required: false
+ *                 season_collection:
+ *                   type: boolean
+ *                   description: Належність до сезонної колекції
+ *                   example: undefiend
+ *                   required: false
+ *                 stock:
+ *                   type: number
+ *                   description: Кількість в наявності
+ *                   example: -1
+ *                   required: false
+ *                 file:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     example: undefiend
+ *                     format: binary
+ *                   description: Завантаження файлів (наприклад, зображень)
+ *                   required: false
+ *       responses:
+ *         202:
+ *           description: Продукт успішно змінений
+ *           content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Models/Product'
+ *         404:
+ *           description: Продукт не знайдено
+ *         500:
+ *           description: Внутрішня помилка сервера
+ */
+
+router.patch('/:id', requireAdminOrOwnerRole, upload.array('file', 10), productController.updateProduct);
+
+
+router.use(genericCrudRoute(Product as Model<IProduct>, "products", ['put', 'delete']));
 export default router;
 
 

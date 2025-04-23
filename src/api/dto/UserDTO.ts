@@ -4,11 +4,13 @@ export interface UserDTO {
     email: string
     password?: string,
     firstName?: string,
-    lastName?: string
+    lastName?: string,
+    phoneNumber?: string
 }
 
 export const convertToUserDTO = (user: IUser): UserDTO => ({
     email: user.email,
     firstName: user.firstName,
-    lastName: user.lastName
+    lastName: user.lastName,
+    phoneNumber: user.phoneNumber
 })

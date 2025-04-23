@@ -5,6 +5,7 @@ import swaggerUIPath from 'swagger-ui-express';
 import { swaggerOptions, swaggerUiOptions } from './config/swagger/swaggerOptions';
 import { ENV } from './config/dotenv/env';
 import cookieParser from "cookie-parser";
+import cors from 'cors'
 
 //entry point
 const app = express();
@@ -26,11 +27,10 @@ app.use(express.json());
 app.use(morganMiddleware); */
 
 //cors
-app.use((req: Request, res: Response, next: NextFunction) => {
-    res.header('Access-Control-Allow-Origin', ['http://localhost:5173', ENV.FRONT_PROD_URI]);
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-    next();
-});
+app.use(cors({
+    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI],
+    credentials: true
+}));
 
 //database connection
 mongoose.connect(ENV.MONGODB_URI, {
@@ -52,11 +52,6 @@ app.use('/api/user-self-access', userSelfAccessRoute);
 //product routes
 import productRoute from './api/routes/productRoute';
 app.use('/api/products', productRoute);
-
-//devlivery crud routes
-import Delivery, { IDelivery } from './api/models/deliveries';
-const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['post', 'put', 'delete']);
-app.use('/api/deliveries', deviveryRoute);
 
 //order routes
 import orderRoute from './api/routes/orderRoute';

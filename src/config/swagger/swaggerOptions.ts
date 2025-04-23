@@ -99,7 +99,8 @@ const options = {
                         properties: {
                             email: { type: 'string', example: 'example@gmail.com' },
                             firstName: { type: 'string', example: "FirstName" },
-                            lastName: { type: 'string', example: 'LastName' }
+                            lastName: { type: 'string', example: 'LastName' },
+                            phoneNumber: { type: 'string', example: '380123456789' }
                         }
                     },
 
@@ -126,12 +127,19 @@ const options = {
                             products: { type: 'array', example: '[]' },
                             firstName: { type: 'string', example: "FirstName" },
                             lastName: { type: 'string', example: 'LastName' },
-                            telephone: { type: 'string', example: "380123456789" },
+                            phoneNumber: { type: 'string', example: "380123456789" },
                             email: { type: 'string', example: 'example@gmail.com' },
                             amountOrder: { type: 'number', example: "1000" },
                             status: { type: 'string', example: 'processing' },
                             paymentMethod: { type: 'string', example: 'cash' },
                             isPaid: { type: 'boolean', example: 'false' }
+                        }
+                    },
+
+                    ProductDto: {
+                        type: 'object',
+                        propeties: {
+                            
                         }
                     }
                 },

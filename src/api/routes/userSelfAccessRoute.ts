@@ -62,6 +62,9 @@ router.get('/profile', requireAuth, userSelfAccessController.getProfile);
  *                          lastName:
  *                              type: string
  *                              example: LastName
+ *                          phoneNumber:
+ *                              type: string
+ *                              example: 380123456789
  *      responses:
  *          200:
  *              description: Success

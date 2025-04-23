@@ -1,26 +1,39 @@
+import { ObjectId } from "mongoose";
 import { PaymentMethods } from "../models/enums/paymentMethods";
-import { IOrder } from "../models/orders";
+import { IOrder, IOrderDelivery } from "../models/orders";
 
 export interface OrderDTO {
+    id: ObjectId,
+    created: Date,
+    code: String,
     products: Object[],
     firstName: string,
     lastName: string,
-    telephone: string,
+    phoneNumber: string,
     email: string,
     amountOrder: number,
     status: string,
     paymentMethod: PaymentMethods,
-    isPaid: boolean
+    isPaid: boolean,
+    delivery: IOrderDelivery,
+    isCallRestricted?: boolean,
+    notes?: string
 }
 
 export const convertToOrderDTO = (order: IOrder): OrderDTO => ({
+    id: order.id,
+    created: order.created,
+    code: order.code,
     products: order.products,
     firstName: order.firstName,
     lastName: order.lastName,
-    telephone: order.telephone,
+    phoneNumber: order.phoneNumber,
     email: order.email,
     amountOrder: order.amountOrder,
     status: order.status,
     paymentMethod: order.paymentMethod,
-    isPaid: order.isPaid
+    isPaid: order.isPaid,
+    delivery: order.delivery,
+    isCallRestricted: order.isCallRestricted,
+    notes: order.notes
 })
