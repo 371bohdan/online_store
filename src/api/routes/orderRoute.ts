@@ -17,7 +17,8 @@ const router = express.Router();
  *       - orders API
  *     summary: Create an order based on the cart
  *     description: Need to provide a product array if the user is not authorised or doesn't have a cart of products. Otherwise, the user's cart will be used.
- *          Payment method = cash or online payment.
+ *          Payment method = cash or online payment. The "isCallRestricted" and "notes" fields are optional. Default value for the 'isCallRestricted' field is 
+ *          'false' (Boolean).
  *     security:
  *       - bearerAuth: [] 
  *     requestBody:
@@ -27,10 +28,6 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               deliveryCompanyId:
- *                 type: string
- *                 description: Delivery company including price and delivery method
- *                 example: 679629d0b6b2b65ac85b3c26
  *               firstName:
  *                 type: string
  *                 description: First name of the client
@@ -59,14 +56,34 @@ const router = express.Router();
  *                     quantity:
  *                       type: integer
  *                       description: Quantity of the product
+ *               delivery:
+ *                 type: object
+ *                 properties:
+ *                   method:
+ *                     type: string
+ *                     example: self_pickup
+ *                   address:
+ *                     type: object
+ *                     properties:
+ *                       city:
+ *                         type: string
+ *                         example: Kyiv
+ *                       department:
+ *                         type: string
+ *                         example: 4
+ *               isCallRestricted:
+ *                 type: boolean
+ *                 example: true
+ *               notes:
+ *                 type: string
  *             required:
- *               - deliveryCompanyId
  *               - firstName
  *               - lastName
  *               - phoneNumber
  *               - email
  *               - products
  *               - paymentMethod
+ *               - delivery
  *     responses:
  *       201:
  *         description: Order created successfully

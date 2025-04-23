@@ -13,6 +13,7 @@ import { convertToOrderDTO, OrderDTO } from "../dto/OrderDTO";
 import { stripeService } from "../../config/stripe/stripeService";
 import User, { IUser } from "../models/users";
 import { getUserByEmail, isUserExistsByEmail } from "./userService";
+import ApiError from "../errors/ApiError";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
@@ -31,12 +32,14 @@ export const orderService = {
         }
 
         const {
-            deliveryCompanyId,
+            delivery,
             firstName,
             lastName,
             phoneNumber,
             email,
-            paymentMethod
+            paymentMethod,
+            isCallRestricted,
+            notes
         } = body;
 
         if (!user && !email) {
@@ -54,15 +57,21 @@ export const orderService = {
             totalAmount += product.price * item.quantity;
         }
 
+        const created = new Date();
+        const code = await generateOrderCode();
         let orderData: Partial<IOrder> = {
-            deliveryCompanyId,
+            created,
+            code,
             firstName,
             lastName,
             phoneNumber,
             email: email ? email : user?.email,
             products,
             amountOrder: totalAmount,
-            paymentMethod
+            paymentMethod,
+            delivery,
+            isCallRestricted,
+            notes
         };
 
         const order = new Order(orderData);
@@ -187,4 +196,15 @@ export async function attachUserToHisOrders(user: IUser): Promise<void> {
     if (orders.length > 0) {
         orders.map(async order => await Order.findByIdAndUpdate(order._id, { userId: user._id }))
     }
+}
+
+async function generateOrderCode(): Promise<string> {
+    for (let i = 0; i < 20; i++) {
+        const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+        if (!await Order.exists({ code: generatedCode })) {
+            return generatedCode;
+        }
+    }
+
+    throw new ApiError(500, 'Cannot generate a code for a new order. All codes already used')
 }
