@@ -92,6 +92,8 @@ router.get('/', productController.productFilterSort);
  *     post:
  *       tags:
  *         - products API
+ *       security:
+ *         - bearerAuth: []
  *       summary: Створення нового продукту
  *       consumes:
  *         - multipart/form-data
