@@ -2,29 +2,58 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import mongooseToSwagger from "mongoose-to-swagger";
 import { OrderStatuses } from "./enums/orderStatusesEnum";
 import { PaymentMethods } from "./enums/paymentMethods";
+import { DeliveryMethods } from "./enums/deliveryMethods";
 
 export interface IOrder extends Document {
     userId?: Types.ObjectId;
-    deliveryCompanyId: Types.ObjectId;
+    created: Date,
+    code: string,
+
     firstName: string;
     lastName: string;
     phoneNumber: string;
     email: string;
     amountOrder: number;
+
     products: {
         productId: Types.ObjectId;
         quantity: number;
         price: number;
     }[];
+
     status: string,
     paymentMethod: PaymentMethods,
-    isPaid: boolean
+    isPaid: boolean,
+
+    delivery: IOrderDelivery,
+    isCallRestricted?: boolean,
+    notes?: string
+}
+
+export interface IOrderDelivery {
+    method: DeliveryMethods,
+    address: {
+        city: string,
+        department: string
+    }
 }
 
 const OrderSchema = new Schema<IOrder>(
     {
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: false },
-        deliveryCompanyId: { type: Schema.Types.ObjectId, ref: "Delivery", required: true },
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User", required: false
+        },
+
+        created: {
+            type: Date,
+            required: true
+        },
+
+        code: {
+            type: String,
+            required: true
+        },
 
         firstName: {
             type: String,
@@ -36,7 +65,7 @@ const OrderSchema = new Schema<IOrder>(
         lastName: {
             type: String,
             required: true,
-            minlength: [5, 'must be at least 5 characters long'],
+            minlength: [3, 'must be at least 5 characters long'],
             maxlength: [20, 'cannot exceed 20 characters'],
         },
 
@@ -78,6 +107,37 @@ const OrderSchema = new Schema<IOrder>(
         isPaid: {
             type: Boolean,
             default: false
+        },
+
+        delivery: {
+            method: {
+                type: String,
+                enum: DeliveryMethods,
+                required: true
+            },
+
+            address: {
+                city: {
+                    type: String,
+                    required: true
+                },
+
+                department: {
+                    type: String,
+                    required: true
+                }
+            }
+        },
+
+        isCallRestricted: {
+            type: Boolean,
+            default: false
+        },
+
+        notes: {
+            type: String,
+            maxlength: [500, 'cannot exceed 500 characters'],
+            required: false
         }
     }
 )

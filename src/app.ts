@@ -28,7 +28,8 @@ app.use(morganMiddleware); */
 
 //cors
 app.use(cors({
-    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI]
+    origin: ['http://localhost:5173', ENV.FRONT_PROD_URI],
+    credentials: true
 }));
 
 //database connection
@@ -51,11 +52,6 @@ app.use('/api/user-self-access', userSelfAccessRoute);
 //product routes
 import productRoute from './api/routes/productRoute';
 app.use('/api/products', productRoute);
-
-//devlivery crud routes
-import Delivery, { IDelivery } from './api/models/deliveries';
-const deviveryRoute: express.Router = genericCrudRoute(Delivery as Model<IDelivery>, "deliveries", ['post', 'put', 'delete']);
-app.use('/api/deliveries', deviveryRoute);
 
 //order routes
 import orderRoute from './api/routes/orderRoute';
