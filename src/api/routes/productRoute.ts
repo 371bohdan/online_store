@@ -157,9 +157,18 @@ router.get('/', productController.productFilterSort);
  *                   type: string
  *                   example: "Термін дії: 2 роки, зберігати в закритому приміщенні"
  *                 characteristics:
- *                   type: string
- *                   example: "Верхні ноти: червоне вино, пряний мигдаль"
- *                   enum: ["Верхні ноти: червоне вино, пряний мигдаль", "Серцеві ноти: кориця, мускатний горіх, мед", "Базові ноти: ваніль, бурштин, дубова кора"]
+ *                   type: object
+ *                   description: характеристики
+ *                   properties:
+ *                     topNotes:
+ *                       type: string
+ *                       example: "червоне вино, пряний мигдаль"
+ *                     heartNotes:
+ *                       type: string
+ *                       example: "кориця, мускатний горіх, мед"
+ *                     baseNotes:
+ *                       type: string
+ *                       example: "ваніль, бурштин, дубова кора"
  *                 gift_packaging:
  *                   type: boolean
  *                   example: true
@@ -302,10 +311,21 @@ router.post('/', requireAdminOrOwnerRole, upload.array('file', 10), productContr
  *                   example: undefiend
  *                   required: false
  *                 characteristics:
- *                   type: string
+ *                   type: object
  *                   description: характеристики
- *                   example: undefiend
- *                   enum: ["Верхні ноти: червоне вино, пряний мигдаль", "Серцеві ноти: кориця, мускатний горіх, мед", "Базові ноти: ваніль, бурштин, дубова кора"]
+ *                   properties:
+ *                     topNotes:
+ *                       type: string
+ *                       description: верхні ноти
+ *                       example: undefiend
+ *                     heartNotes:
+ *                       type: string
+ *                       description: серцеві ноти
+ *                       example: undefiend
+ *                     baseNotes:
+ *                       type: string
+ *                       description: базові ноти
+ *                       example: undefiend
  *                 gift_packaging:
  *                   type: boolean
  *                   description: Наявність подарункової упаковки

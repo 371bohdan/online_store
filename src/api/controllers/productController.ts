@@ -22,6 +22,16 @@ const productController = {
         const files = req.files as Express.Multer.File[];
         const productData = req.body;
 
+
+        // Парсимо 'characteristics' з JSON-стрічки, якщо є
+        if (productData.characteristics) {
+            try {
+                productData.characteristics = JSON.parse(productData.characteristics);
+            } catch (e) {
+                throw new Error('Invalid JSON format for characteristics');
+            }
+        }
+        
         if (!files || files.length === 0) {
             throw new ImageUploadError(StatusCodes.BAD_REQUEST, 'Files are missing');
         }
@@ -39,6 +49,15 @@ const productController = {
         const productId = req.params.id;
         const updateData = req.body;
         const files = req.files as Express.Multer.File[] | undefined;
+
+        // Парсимо 'characteristics' з JSON-стрічки, якщо є
+        if (updateData.characteristics) {
+            try {
+                updateData.characteristics = JSON.parse(updateData.characteristics);
+            } catch (e) {
+                throw new Error('Invalid JSON format for characteristics');
+            }
+        }
         
         const updatedProduct = await productService.updateProduct(productId, updateData, files);
         res.status(StatusCodes.ACCEPTED).json(updatedProduct)

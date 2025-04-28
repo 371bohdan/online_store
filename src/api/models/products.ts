@@ -2,6 +2,12 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 import mongooseToSwagger from 'mongoose-to-swagger';
 import { CollectionsEnum } from './enums/collectionsEnum';
 
+export interface ICharacteristics {
+    topNotes: string;
+    heartNotes: string;
+    baseNotes: string;
+  }
+
 export interface IProduct extends Document {
     _id: Types.ObjectId;
     title: string;
@@ -19,7 +25,7 @@ export interface IProduct extends Document {
     features: string;
     composition: string;
     care: string;
-    characteristics: string;
+    characteristics: ICharacteristics;
     gift_packaging: boolean;
     season_collection: boolean;
     comments: Types.ObjectId[];
@@ -50,7 +56,14 @@ const ProductSchema = new Schema<IProduct>({
     features: { type: String, required: true, enum: ['Натуральні інгредієнти', 'Еко-дружні', 'Антиалергічні', 'Для подарунка', 'Для особливих моментів'] },
     composition: { type: String, required: true },
     care: { type: String, required: true },
-    characteristics: { type: String, required: true, enum: ['Верхні ноти: червоне вино, пряний мигдаль', 'Серцеві ноти: кориця, мускатний горіх, мед', 'Базові ноти: ваніль, бурштин, дубова кора'] },
+    characteristics: { 
+        type: new Schema({
+          topNotes: { type: String, required: true },
+          heartNotes: { type: String, required: true },
+          baseNotes: { type: String, required: true },
+        }, { _id: false }),
+        required: true
+      },
     gift_packaging: { type: Boolean, required: true },
     season_collection: { type: Boolean, required: true },
     comments: { type: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], default: [] },
