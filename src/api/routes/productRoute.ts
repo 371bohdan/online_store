@@ -156,6 +156,10 @@ router.get('/', productController.productFilterSort);
  *                 care:
  *                   type: string
  *                   example: "Термін дії: 2 роки, зберігати в закритому приміщенні"
+ *                 characteristics:
+ *                   type: string
+ *                   example: "Верхні ноти: червоне вино, пряний мигдаль"
+ *                   enum: ["Верхні ноти: червоне вино, пряний мигдаль", "Серцеві ноти: кориця, мускатний горіх, мед", "Базові ноти: ваніль, бурштин, дубова кора"]
  *                 gift_packaging:
  *                   type: boolean
  *                   example: true
@@ -297,6 +301,11 @@ router.post('/', requireAdminOrOwnerRole, upload.array('file', 10), productContr
  *                   description: Догляд за продуктом
  *                   example: undefiend
  *                   required: false
+ *                 characteristics:
+ *                   type: string
+ *                   description: характеристики
+ *                   example: undefiend
+ *                   enum: ["Верхні ноти: червоне вино, пряний мигдаль", "Серцеві ноти: кориця, мускатний горіх, мед", "Базові ноти: ваніль, бурштин, дубова кора"]
  *                 gift_packaging:
  *                   type: boolean
  *                   description: Наявність подарункової упаковки
