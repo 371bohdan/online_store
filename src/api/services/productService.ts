@@ -83,34 +83,50 @@ export const productService = {
     async updateProduct(productId: string, updateData: Partial<IProduct>, files?: Express.Multer.File[]): Promise<IProduct> {
         await ensureItemExists(Product, "_id", productId);
 
+        const updateFields: any = {};
+    
         if (files && files.length > 0) {
             const newImageUrls = await Promise.all(files.map(file => imageService.uploadFile(file)));
             updateData.image = newImageUrls;
         }
-
-        // Перевіряємо кожне поле в updateData і оновлюємо тільки визначені значення
+    
+        // Перевіряємо кожне поле в updateData і видаляємо некоректні значення
         for (const key in updateData) {
-            const value = updateData[key as keyof Partial<IProduct>];     
-            // Видаляємо поля, якщо це:
-            // - undefined
-            // - рядок з "undefined", "undefiend", "null" (на всяк випадок)
-            // - -1 (як маркер неактивного значення)
+            const value = updateData[key as keyof Partial<IProduct>];
             if (
                 value === undefined ||
                 value === null ||
                 value === -1 ||
                 value === '-1' ||
                 value === 'undefined' ||
-                value === 'undefiend' || // поширена опечатка
-                value === "undefiend" ||
+                value === 'undefiend' ||
                 value === 'null'
             ) {
                 delete updateData[key as keyof Partial<IProduct>];
             }
         }
-
-        const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
+    
+        // Оновлюємо characteristics окремо
+        if (updateData.characteristics) {
+            for (const [key, value] of Object.entries(updateData.characteristics)) {
+                if (value !== undefined && value !== null) {
+                    updateFields[`characteristics.${key}`] = value;
+                }
+            }
+            delete updateData.characteristics; // щоб не перезаписати повністю весь characteristics
+        }
+    
+        // Додаємо всі інші звичайні поля
+        Object.assign(updateFields, updateData);
+    
+        const updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            { $set: updateFields },
+            { new: true }
+        );
+    
         if (!updatedProduct) throw new NotFoundError(`Product with ID ${productId} not found`);
+    
         return updatedProduct;
     },
 
