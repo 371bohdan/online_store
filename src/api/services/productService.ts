@@ -90,8 +90,7 @@ export const productService = {
 
         // Перевіряємо кожне поле в updateData і оновлюємо тільки визначені значення
         for (const key in updateData) {
-            const value = updateData[key as keyof Partial<IProduct>];
-        
+            const value = updateData[key as keyof Partial<IProduct>];     
             // Видаляємо поля, якщо це:
             // - undefined
             // - рядок з "undefined", "undefiend", "null" (на всяк випадок)
@@ -103,6 +102,7 @@ export const productService = {
                 value === '-1' ||
                 value === 'undefined' ||
                 value === 'undefiend' || // поширена опечатка
+                value === "undefiend" ||
                 value === 'null'
             ) {
                 delete updateData[key as keyof Partial<IProduct>];
