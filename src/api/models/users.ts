@@ -13,7 +13,7 @@ export interface IUser extends mongoose.Document {
     avatar: String;
     recoveryCode: UUID,
     recoveryCodeCreatedAt: Date,
-    role: string,
+    role: UserRoles,
     isVerified: Boolean,
     verificationCode: UUID,
     verificationCodeCreatedAt: Date,
