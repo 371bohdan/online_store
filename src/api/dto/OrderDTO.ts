@@ -3,7 +3,7 @@ import { PaymentMethods } from "../models/enums/paymentMethods";
 import { IOrder, IOrderDelivery } from "../models/orders";
 
 export interface OrderDTO {
-    id: ObjectId,
+    _id: ObjectId,
     created: Date,
     code: String,
     products: Object[],
@@ -21,7 +21,7 @@ export interface OrderDTO {
 }
 
 export const convertToOrderDTO = (order: IOrder): OrderDTO => ({
-    id: order.id,
+    _id: order.id,
     created: order.created,
     code: order.code,
     products: order.products,
