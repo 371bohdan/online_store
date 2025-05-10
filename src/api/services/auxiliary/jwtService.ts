@@ -38,7 +38,7 @@ export const jwtService = {
             throw new BadRequestError("You've passed the bearer token without a correct authentication scheme ('Bearer ')")
         }
 
-        return bearerToken.substring(7, bearerToken.length);
+        return bearerToken.substring(7, bearerToken.length);;
     },
 
     /**
