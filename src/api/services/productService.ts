@@ -10,35 +10,6 @@ import { ensureItemExists } from "./genericCrudService";
 const allowedSortValues: SortOrder[] = ['asc', 'desc', 1, -1];
 
 
-// async deleteFileByUrl(url: string): Promise<void> {
-//     const filePath = extractPathFromUrl(url); // Напиши функцію, яка дістає шлях до файлу з URL
-//     const { error } = await supabase.storage.from(BUCKET_NAME).remove([filePath]);
-//     if (error) {
-//         throw new Error(`Помилка видалення зображення: ${error.message}`);
-//     }
-// },
-
-
-// function extractPathFromUrl(url: string): string {
-//     try {
-//         const parsedUrl = new URL(url);
-//         // URL вигляду: https://xyz.supabase.co/storage/v1/object/public/bucket-name/path/to/image.jpg
-//         const pathParts = parsedUrl.pathname.split('/');
-//         const bucketIndex = pathParts.findIndex(part => part === 'object');
-
-//         if (bucketIndex === -1 || bucketIndex + 2 >= pathParts.length) {
-//             throw new Error('Invalid Supabase storage URL format');
-//         }
-
-//         // Витягуємо шлях після назви бакету
-//         const filePath = pathParts.slice(bucketIndex + 2).join('/');
-//         return filePath;
-//     } catch (error) {
-//         throw new Error(`Failed to extract path from URL: ${(error as Error).message}`);
-//     }
-// }
-
-
 export const productService = {
     async productFilterSort(title = "", sortPrice?: SortOrder, sortDate?: SortOrder): Promise<IProduct[]> {
         // Перевірка допустимих значень
@@ -54,8 +25,13 @@ export const productService = {
         let query = Product.find();
 
         // Фільтрація за title
-        if (title) {
-            query = query.where('title').regex(new RegExp(title, 'i'));
+        if (title.trim().length >= 3) {
+            const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            query = query.where('title').regex(new RegExp(escapedTitle, 'i'));
+        }else if (title.trim().length > 0 && title.trim().length < 3) {
+            // Додати умову, яка завідомо нічого не знайде
+            // Наприклад, пошук по title, який не існує
+            query = query.where('title').equals('__no_match__');
         }
 
 
