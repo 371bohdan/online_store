@@ -170,7 +170,7 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  *      requestBody:
  *          required: true
  *          description: | 
- *              <strong>Status:</strong> 'processing', 'accepted', 'sent', 'received', 'canceled' <br>
+ *              <strong>Status:</strong> 'processing', 'accepted', 'on the way', 'delivered', 'received', 'return', 'canceled' <br>
  *          content: 
  *              application/json:
  *                  schema:
@@ -290,6 +290,43 @@ router.get('/successfulPayment', orderController.successfulPayment);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'      
  */
 router.get('/unsuccessfulPayment', orderController.unsuccessfulPayment);
+
+/**
+ * @swagger
+ * /api/orders/statistics:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: returns order statistics for the entered start and end dates.
+ *      description: date format - dd.mm.yyyy. Orders with the status 'cancelled' or 'return' aren't included in the 'mostPurchasedProducts' and 'salesScheduleInfo' info.
+ *      security:
+ *       - bearerAuth: []
+ *      parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *         description: start date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *         description: end date
+ *      responses:
+ *          200:
+ *              description: Payment cancelled
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Dto/OrderStatDto'
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'  
+ */
+router.get('/statistics', requireAuth, requireAdminOrOwnerRole, orderController.statistics);
 
 router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['put', 'delete']));
 router.use(errorHandler);

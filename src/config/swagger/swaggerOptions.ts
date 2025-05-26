@@ -137,9 +137,32 @@ const options = {
                     },
 
                     ProductDto: {
+
+                    },
+
+                    OrderStatDto: {
                         type: 'object',
-                        propeties: {
-                            
+                        properties: {
+                            totalOrdersNum: { type: 'number', example: '0' },
+                            completedOrdersNum: { type: 'number', example: '0' },
+                            returnedOrdersNum: { type: 'number', example: '0' },
+                            mostPurchasedProducts: {
+                                type: 'object',
+                                properties: {
+                                    orderId: { type: 'string', example: '680cdcbb21c1010dbaf7e0a1' },
+                                    quantity: { type: 'number', example: '1' },
+                                }
+                            },
+
+                            createdOrdersInfo: {
+                                type: 'object',
+                                properties: {
+                                    orderId: { type: 'string', example: '680cdcbb21c1010dbaf7e0a1' },
+                                    amount: { type: 'number', example: '500' },
+                                    currentStatus: { type: 'string', example: 'received' },
+                                    created: { type: 'string', example: 'yyyy-mm-ddThh:mm:ss:ms' },
+                                }
+                            },
                         }
                     }
                 },
