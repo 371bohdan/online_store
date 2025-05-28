@@ -62,7 +62,6 @@ export const orderService = {
         const code = await generateOrderCode();
         let orderData: Partial<IOrder> = {
             created,
-            code,
             firstName,
             lastName,
             phoneNumber,

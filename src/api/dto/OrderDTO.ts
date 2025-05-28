@@ -5,7 +5,6 @@ import { IOrder, IOrderDelivery } from "../models/orders";
 export interface OrderDTO {
     _id: ObjectId,
     created: Date,
-    code: String,
     products: Object[],
     firstName: string,
     lastName: string,
@@ -23,7 +22,6 @@ export interface OrderDTO {
 export const convertToOrderDTO = (order: IOrder): OrderDTO => ({
     _id: order.id,
     created: order.created,
-    code: order.code,
     products: order.products,
     firstName: order.firstName,
     lastName: order.lastName,

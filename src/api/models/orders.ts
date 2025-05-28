@@ -7,8 +7,6 @@ import { DeliveryMethods } from "./enums/deliveryMethods";
 export interface IOrder extends Document {
     userId?: Types.ObjectId;
     created: Date,
-    code: string,
-
     firstName: string;
     lastName: string;
     phoneNumber: string;
@@ -47,11 +45,6 @@ const OrderSchema = new Schema<IOrder>(
 
         created: {
             type: Date,
-            required: true
-        },
-
-        code: {
-            type: String,
             required: true
         },
 
