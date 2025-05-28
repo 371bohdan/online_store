@@ -7,8 +7,8 @@ import fs from 'fs';
 import path from 'path';
 
 
-const VERIFY_EMAIL_URI: string = ENV.HOST_URI + '/api/auth/verifyEmail';
-const RECOVER_PASSWORD_URI: string = ENV.HOST_URI + '/api/auth/passwordRecovery';
+const VERIFY_EMAIL_URI: string = ENV.FRONT_PROD_URI + '/api/auth/verifyEmail';
+const RECOVER_PASSWORD_URI: string = ENV.FRONT_PROD_URI + '/api/auth/passwordRecovery';
 
 
 const loadTemplate = (templateName: string, context: Record<string, any>): string => {

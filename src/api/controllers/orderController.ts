@@ -31,6 +31,12 @@ const orderController = {
         const sessionId = req.query.session_id as string;
         const orderDto = await orderService.unsuccessfulPayment(sessionId);
         res.json(orderDto);
+    }),
+
+    statistics: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const { startDate, endDate } = req.query;
+        const orderStatDto = await orderService.getStatistics(startDate as string, endDate as string);
+        res.json(orderStatDto);
     })
 };
 

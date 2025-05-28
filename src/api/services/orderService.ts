@@ -14,6 +14,7 @@ import { stripeService } from "../../config/stripe/stripeService";
 import User, { IUser } from "../models/users";
 import { getUserByEmail, isUserExistsByEmail } from "./userService";
 import ApiError from "../errors/ApiError";
+import { convertToOrderStatDTO, SalesScheduleInfo, OrderStatDTO } from "../dto/OrderStatDTO";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
@@ -113,42 +114,52 @@ export const orderService = {
 
     changeStatus: async (orderId: string, newStatus: string): Promise<OrderDTO> => {
         const currentStatus = (await getItemByField(Order, '_id', orderId)).status;
+        let allowStatusChange = false;
 
         if (!Object.values(OrderStatuses).includes(newStatus as OrderStatuses)) {
             throw new BadRequestError("This status doesn't exist")
         }
 
-        if (newStatus === OrderStatuses.CANCELED && currentStatus !== OrderStatuses.RECEIVED) {
+        if (newStatus === OrderStatuses.CANCELED && (currentStatus !== OrderStatuses.RECEIVED && currentStatus !== OrderStatuses.RETURN)) {
             return convertToOrderDTO(await setStatus(orderId, newStatus));
         }
 
         switch (currentStatus as OrderStatuses) {
             case OrderStatuses.PROCESSING:
                 if (newStatus === OrderStatuses.ACCEPTED) {
-                    const updatedOrder = await setStatus(orderId, newStatus);
-                    return convertToOrderDTO(updatedOrder);
+                    allowStatusChange = true;
                 }
 
                 break;
 
             case OrderStatuses.ACCEPTED:
-                if (newStatus === OrderStatuses.SENT) {
-                    const updatedOrder = await setStatus(orderId, newStatus);
-                    return convertToOrderDTO(updatedOrder);
+                if (newStatus === OrderStatuses.ON_THE_WAY) {
+                    allowStatusChange = true;
                 }
 
                 break;
 
-            case OrderStatuses.SENT:
-                if (newStatus === OrderStatuses.RECEIVED) {
-                    const updatedOrder = await setStatus(orderId, newStatus);
-                    return convertToOrderDTO(updatedOrder);
+            case OrderStatuses.ON_THE_WAY:
+                if (newStatus === OrderStatuses.DELIVERED) {
+                    allowStatusChange = true;
+                }
+
+                break;
+
+            case OrderStatuses.DELIVERED:
+                if (newStatus === OrderStatuses.RECEIVED || newStatus == OrderStatuses.RETURN) {
+                    allowStatusChange = true;
                 }
 
                 break;
 
             default:
                 throw new BadRequestError("Sorry, the status of this order has already been completed");
+        }
+
+        if (allowStatusChange) {
+            const updatedOrder = await setStatus(orderId, newStatus as OrderStatuses);
+            return convertToOrderDTO(updatedOrder);
         }
 
         throw new BadRequestError("Logic mismatch: sorry, you cannot set this status");
@@ -167,6 +178,19 @@ export const orderService = {
         const orderId = session.metadata?.orderId;
         const order = await getItemByField(Order, '_id', orderId);
         return convertToOrderDTO(order);
+    },
+
+    getStatistics: async (startDateStr?: string, endDateStr?: string): Promise<OrderStatDTO> => {
+        const orders = await getSortedOrderListByDate(startDateStr, endDateStr);
+
+        const totalOrdersNum = getOrdersInfo(orders);
+        const completedOrdersNum = getOrdersInfo(orders, OrderStatuses.RECEIVED);
+        const returnedOrdersNum = getOrdersInfo(orders, OrderStatuses.RETURN);
+
+        const mostPurchasedProducts = getMostPurchasedProducts(orders);
+        const salesScheduleInfo = getSalesScheduleInfo(orders, endDateStr);
+
+        return convertToOrderStatDTO(totalOrdersNum, completedOrdersNum, returnedOrdersNum, mostPurchasedProducts, salesScheduleInfo);
     }
 }
 
@@ -207,4 +231,238 @@ async function generateOrderCode(): Promise<string> {
     }
 
     throw new ApiError(500, 'Cannot generate a code for a new order. All codes already used')
+}
+
+/**
+ * Returns the order array sorted by date according to the provided parameters. If no parameters are specified, it returns the standard array containing all orders.
+ * @param startDateStr The start of the date, from which orders will be returned. Must be a string, in the following format: dd.mm.yyyy
+ * @param endDateStr The end of the date, after which orders will not be returned. Must be a string, in the following format: dd.mm.yyyy
+ * @returns The sorted array of orders.
+ */
+async function getSortedOrderListByDate(startDateStr?: string, endDateStr?: string) {
+    if (startDateStr && endDateStr) {
+        const startDate = convertDateStrToDate(startDateStr);
+        const endDate = convertDateStrToDate(endDateStr);
+
+        return await Order
+            .find({
+                created: {
+                    $gte: startDate,
+                    $lte: endDate
+                }
+            })
+            .sort({ created: 1 });
+
+    } else if (startDateStr) {
+        const startDate = convertDateStrToDate(startDateStr);
+        return await Order
+            .find({
+                created: {
+                    $gte: startDate
+                }
+            })
+            .sort({ created: 1 });
+
+    } else if (endDateStr) {
+        const endDate = convertDateStrToDate(endDateStr);
+        return await Order
+            .find({
+                created: {
+                    $lte: endDate
+                }
+            })
+            .sort({ created: 1 });
+
+    } else {
+        return await Order
+            .find({})
+            .sort({ created: 1 });
+    }
+}
+
+/**
+ * Returns information about quantity and the amount of all provided orders. Can be filtered by status (optional).
+ * @param orders The array of orders to analyze.
+ * @param status The status to filter orders by (optional).
+ * @returns An object containing the quantity and total amount of completed orders.
+ */
+function getOrdersInfo(orders: IOrder[], status?: OrderStatuses) {
+    let filteredOrder;
+    if (status) {
+        filteredOrder = orders.filter((order) => order.status === status);
+
+    } else {
+        filteredOrder = orders;
+    }
+
+    const complOrdersNumQuant = filteredOrder.length;
+    const complOrdersNumAmount = filteredOrder.reduce((sum, order) => sum + order.amountOrder, 0);
+
+    return ({ quantity: complOrdersNumQuant, amount: complOrdersNumAmount })
+}
+
+/**
+ * Converts a date string in the format dd.mm.yyyy to a Date object.
+ * @param dateStr The date string in the format dd.mm.yyyy
+ * @returns The corresponding Date object.
+ */
+function convertDateStrToDate(dateStr: string): Date {
+    const splitedDateStr = dateStr.split('.', 3);
+    return new Date(splitedDateStr[2] + ' ' + splitedDateStr[1] + ' ' + splitedDateStr[0]);
+}
+
+/**
+ * Converts a local date to a UTC date.
+ * @param localDate The local date to convert to UTC date
+ * @returns The corresponding UTC date.
+ */
+function getUTCDate(localDate: Date) {
+    return Date.UTC(
+        localDate.getUTCFullYear(),
+        localDate.getUTCMonth(),
+        localDate.getUTCDate()
+    )
+}
+
+/**
+ * Converts a local date to a UTC month.
+ * @param localDate The local date to convert to UTC month
+ * @returns The corresponding UTC month.
+ */
+function getUTCMonth(localDate: Date) {
+    return Date.UTC(
+        localDate.getUTCFullYear(),
+        localDate.getUTCMonth()
+    )
+}
+
+/**
+ * Converts a local date to a UTC date and time.
+ * @param localDate The local date to convert to UTC date and time
+ * @returns The corresponding UTC date and time.
+ */
+function getUTCDateTime(localDate: Date) {
+    return Date.UTC(
+        localDate.getUTCFullYear(),
+        localDate.getUTCMonth(),
+        localDate.getDate(),
+        localDate.getUTCHours(),
+        localDate.getUTCMinutes(),
+        localDate.getUTCSeconds()
+    )
+}
+
+/**
+ * Returns the number of days between the first and last order.
+ * @param orders The array of orders to analyze.
+ * If the array is empty or contains less than 2 orders, it returns 0.
+ * @returns The number of days between the first and last order.
+ */
+function getDaysDifference(orders: IOrder[]): number {
+    if (!orders || orders.length < 2) {
+        return 0;
+    }
+
+    const dateOfFirst = orders[0].created;
+    const dateOfLast = orders[orders.length - 1].created;
+
+    const dateDiffInMs = dateOfLast.getTime() - dateOfFirst.getTime();
+
+    return dateDiffInMs / (1000 * 60 * 60 * 24);
+}
+
+/**
+ * Returns the most purchased products from the provided orders.
+ * @param orders The array of orders to analyze.
+ * @returns An array of the most purchased products (The first item is the most purchased).
+ */
+function getMostPurchasedProducts(orders: IOrder[]) {
+    const productsStatInfo: OrderItem[] = [];
+
+    for (const order of orders) {
+        if (order.status === OrderStatuses.CANCELED || order.status === OrderStatuses.RETURN) {
+            continue;
+        }
+
+        if (order.products) {
+            for (const product of order.products) {
+                const productStatIndex = productsStatInfo.findIndex((item) => item.productId === product.productId.toString());
+
+                if (productStatIndex === -1) {
+                    productsStatInfo.push({ productId: product.productId.toString(), quantity: product.quantity });
+                    continue;
+                }
+
+                const existProd = productsStatInfo[productStatIndex];
+                existProd.quantity += product.quantity;
+                productsStatInfo[productStatIndex] = existProd;
+            }
+        }
+    }
+
+    let mostPurchasedProducts = [];
+
+    if (productsStatInfo.length > 4) {
+        const tempList = productsStatInfo.sort((product, nextProduct) => nextProduct.quantity - product.quantity);
+        mostPurchasedProducts = tempList.slice(0, 4);
+
+    } else {
+        mostPurchasedProducts = productsStatInfo.sort((product, nextProduct) => nextProduct.quantity - product.quantity)
+    }
+
+    return mostPurchasedProducts;
+}
+
+/**
+ * Returns the sales schedule information based on the provided orders.
+ * @param orders The array of orders to analyze.
+ * This function calculates the sales schedule information based on the provided orders.
+ * @returns The sales schedule information.
+ */
+function getSalesScheduleInfo(orders: IOrder[], endDateStr?: string): SalesScheduleInfo[] {
+    const salesScheduleInfo: SalesScheduleInfo[] = [];
+    const daysDiff = getDaysDifference(orders);
+    const endDate = endDateStr ? (convertDateStrToDate(endDateStr)) : new Date();
+
+    for (const order of orders) {
+        if (order.status === OrderStatuses.CANCELED || order.status === OrderStatuses.RETURN) {
+            continue;
+        }
+
+        let utcDate: Date;
+        if (daysDiff < 30) {
+            utcDate = new Date(getUTCDate(order.created))
+
+        } else {
+            const utcMonth = new Date(getUTCMonth(order.created));
+            let nextMonth = new Date(utcMonth.setUTCMonth(utcMonth.getUTCMonth() + 1));
+
+            if (nextMonth.getTime() > endDate.getTime()) {
+                nextMonth = endDateStr ? endDate : new Date(getUTCDateTime(endDate));
+                utcDate = new Date(nextMonth.setMinutes(nextMonth.getMinutes() - nextMonth.getTimezoneOffset()))
+
+            } else {
+                utcDate = new Date(nextMonth.setMinutes(nextMonth.getMinutes() - 1));
+            }
+        }
+
+        const saleIndex = salesScheduleInfo.findIndex((sale) => sale.date.getTime() === utcDate.getTime());
+
+        if (saleIndex === -1) {
+            salesScheduleInfo.push({
+                date: utcDate,
+                totalCreatedOrders: 1,
+                totalAmount: order.amountOrder
+            });
+
+        } else {
+            const existSale = salesScheduleInfo[saleIndex];
+            existSale.totalCreatedOrders += 1;
+
+            existSale.totalAmount += order.amountOrder;
+            salesScheduleInfo[saleIndex] = existSale;
+        }
+    }
+
+    return salesScheduleInfo;
 }
