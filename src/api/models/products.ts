@@ -26,8 +26,9 @@ export interface IProduct extends Document {
     composition: string;
     care: string;
     characteristics: ICharacteristics;
-    gift_packaging: boolean;
     season_collection: boolean;
+    special_treat: boolean;
+    top_sales: boolean;
     comments: Types.ObjectId[];
     stock: number;
     rate_avg_product: number;
@@ -64,8 +65,9 @@ const ProductSchema = new Schema<IProduct>({
         }, { _id: false }),
         required: true
       },
-    gift_packaging: { type: Boolean, required: true },
     season_collection: { type: Boolean, required: true },
+    special_treat: { type: Boolean, required: true },
+    top_sales: { type: Boolean, required: true },
     comments: { type: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], default: [] },
     stock: { type: Number, required: true, min: 0 },
     rate_avg_product: { type: Number, default: 0 },
