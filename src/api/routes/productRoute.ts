@@ -169,12 +169,15 @@ router.get('/', productController.productFilterSort);
  *                     baseNotes:
  *                       type: string
  *                       example: "ваніль, бурштин, дубова кора"
- *                 gift_packaging:
- *                   type: boolean
- *                   example: true
  *                 season_collection:
  *                   type: boolean
  *                   example: true
+ *                 special_treat:
+ *                   type: boolean
+ *                   example: false
+ *                 top_sales:
+ *                   type: boolean
+ *                   example: false
  *                 file:
  *                   type: array
  *                   items:
@@ -326,15 +329,18 @@ router.post('/', requireAdminOrOwnerRole, upload.array('file', 10), productContr
  *                       type: string
  *                       description: базові ноти
  *                       example: undefiend
- *                 gift_packaging:
- *                   type: boolean
- *                   description: Наявність подарункової упаковки
- *                   example: undefiend
- *                   required: false
  *                 season_collection:
  *                   type: boolean
  *                   description: Належність до сезонної колекції
  *                   example: undefiend
+ *                   required: false
+ *                 special_treat:
+ *                   type: boolean
+ *                   description: спецподарунок в комплект
+ *                   required: false
+ *                 top_sales:
+ *                   type: boolean
+ *                   description: топ продажів
  *                   required: false
  *                 stock:
  *                   type: number

@@ -170,7 +170,7 @@ router.get('/statuses', requireAuth, orderController.getAllStatuses);
  *      requestBody:
  *          required: true
  *          description: | 
- *              <strong>Status:</strong> 'processing', 'accepted', 'sent', 'received', 'canceled' <br>
+ *              <strong>Status:</strong> 'processing', 'accepted', 'on the way', 'delivered', 'received', 'return', 'canceled' <br>
  *          content: 
  *              application/json:
  *                  schema:
@@ -290,6 +290,158 @@ router.get('/successfulPayment', orderController.successfulPayment);
  *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'      
  */
 router.get('/unsuccessfulPayment', orderController.unsuccessfulPayment);
+
+/**
+ * @swagger
+ * /api/orders/statistic:
+ *  get:
+ *      tags:
+ *          - orders API
+ *      summary: returns all payded order static data which was choose in according period of time.
+ *      description: show static from model of Order.
+ *      security:
+ *       - bearerAuth: []
+ *      parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: ['day', 'week', 'month', 'year']
+ *         description: choosing a specific time period
+ *      responses:
+ *          200:
+ *              description: Show all static in according period of time
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/Dto/OrderStatDto'
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *               application/json:
+ *                   schema:
+ *                       $ref: '#/components/schemas/ErrorResponse/InternalServerError'  
+ */
+router.get('/statistic', requireAuth, requireAdminOrOwnerRole, orderController.getStatistic);
+
+/**
+ * @swagger
+ * /api/orders/sold_data_product:
+ *   get:
+ *     tags:
+ *       - orders API
+ *     summary: Returns sold products data for the last 30 days.
+ *     description: Shows an array of products with sales statistics for the last 30 days.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of sold products with statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "64f56c4d9b1d3a6bfc98a1a2"
+ *                   title:
+ *                     type: string
+ *                     example: "Vanilla Scented Candle"
+ *                   price:
+ *                     type: number
+ *                     example: 19.99
+ *                   image:
+ *                     type: string
+ *                     nullable: true
+ *                     example: "https://example.com/images/candle.jpg"
+ *                   soldCount:
+ *                     type: number
+ *                     example: 25
+ *                   soldAmount:
+ *                     type: number
+ *                     example: 499.75
+ *                   stock:
+ *                     type: number
+ *                     example: 120
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse/InternalServerError'
+ */
+
+router.get('/sold_data_product', requireAuth, requireAdminOrOwnerRole, orderController.getSoldProducts);
+
+/**
+ * @swagger
+ * /api/orders/{orderId}/pay:
+ *   patch:
+ *     tags:
+ *       - orders API
+ *     summary: Mark an order as paid and received
+ *     description: Updates an order to set isPaid to true and status to 'received'
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the order to update
+ *     responses:
+ *       200:
+ *         description: Order successfully marked as paid and received
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Dto/OrderStatDto'
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.patch('/:orderId/pay', requireAuth, requireAdminOrOwnerRole, orderController.setOrderPaid);
+
+/**
+ * @swagger
+ * /api/orders/{orderId}/return:
+ *   patch:
+ *     tags:
+ *       - orders API
+ *     summary: Mark an order as returned
+ *     description: Updates the status of an order to 'returned' only if it has been paid
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the order to update
+ *     responses:
+ *       200:
+ *         description: Order successfully marked as returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Dto/OrderStatDto'
+ *       400:
+ *         description: Order is not paid and cannot be marked as returned
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.patch('/:orderId/return', requireAuth, requireAdminOrOwnerRole, orderController.setOrderReturned);
+
 
 router.use(genericCrudRoute(Order as Model<IOrder>, "orders", ['put', 'delete']));
 router.use(errorHandler);
