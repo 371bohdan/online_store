@@ -23,6 +23,8 @@ export interface IOrder extends Document {
     paymentMethod: PaymentMethods,
     isPaid: boolean,
 
+    datePayment?: Date;
+
     delivery: IOrderDelivery,
     isCallRestricted?: boolean,
     notes?: string
@@ -102,6 +104,11 @@ const OrderSchema = new Schema<IOrder>(
             default: false
         },
 
+        datePayment: {
+            type: Date,
+            required: false,
+        },
+
         delivery: {
             method: {
                 type: String,
@@ -134,6 +141,18 @@ const OrderSchema = new Schema<IOrder>(
         }
     }
 )
+
+
+OrderSchema.pre("findOneAndUpdate", function (next) {
+    const update = this.getUpdate() as any;
+
+    if (update?.isPaid === true && !update?.datePayment) {
+        update.datePayment = new Date();
+        this.setUpdate(update);
+    }
+
+    next();
+});
 
 const Order = mongoose.model<IOrder>("Order", OrderSchema);
 export default Order;
