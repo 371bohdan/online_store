@@ -1,4 +1,5 @@
 import Order, { IOrder } from "../models/orders";
+import {IProduct} from '../models/products';
 import Product from "../models/products";
 import Cart from "../models/carts";
 import mailController from "../../config/mail/mailController";
@@ -14,7 +15,8 @@ import { stripeService } from "../../config/stripe/stripeService";
 import User, { IUser } from "../models/users";
 import { getUserByEmail, isUserExistsByEmail } from "./userService";
 import ApiError from "../errors/ApiError";
-import { convertToOrderStatDTO, SalesScheduleInfo, OrderStatDTO } from "../dto/OrderStatDTO";
+import { convertToOrderStatDTO, SalesScheduleInfo, OrderStatDTO, SalesOverwiev, SalesInfo, StaticOrderInterface, soldProductData } from "../dto/OrderStatDTO";
+import asyncHandler from "../middleware/errors/asyncHandler";
 
 export const orderService = {
     createOrder: async (body: { products: OrderItem[] } & any, bearerToken: string | undefined): Promise<OrderDTO> => {
@@ -179,17 +181,154 @@ export const orderService = {
         return convertToOrderDTO(order);
     },
 
-    getStatistics: async (startDateStr?: string, endDateStr?: string): Promise<OrderStatDTO> => {
-        const orders = await getSortedOrderListByDate(startDateStr, endDateStr);
+    // getStatistics: async (startDateStr?: string, endDateStr?: string): Promise<OrderStatDTO> => {
+    //     const orders = await getSortedOrderListByDate(startDateStr, endDateStr);
 
-        const totalOrdersNum = getOrdersInfo(orders);
-        const completedOrdersNum = getOrdersInfo(orders, OrderStatuses.RECEIVED);
-        const returnedOrdersNum = getOrdersInfo(orders, OrderStatuses.RETURN);
+    //     const totalOrdersNum = getOrdersInfo(orders);
+    //     const completedOrdersNum = getOrdersInfo(orders, OrderStatuses.RECEIVED);
+    //     const returnedOrdersNum = getOrdersInfo(orders, OrderStatuses.RETURN);
 
-        const mostPurchasedProducts = getMostPurchasedProducts(orders);
-        const salesScheduleInfo = getSalesScheduleInfo(orders, endDateStr);
+    //     const mostPurchasedProducts = getMostPurchasedProducts(orders);
+    //     const salesScheduleInfo = getSalesScheduleInfo(orders, endDateStr);
 
-        return convertToOrderStatDTO(totalOrdersNum, completedOrdersNum, returnedOrdersNum, mostPurchasedProducts, salesScheduleInfo);
+    //     return convertToOrderStatDTO(totalOrdersNum, completedOrdersNum, returnedOrdersNum, mostPurchasedProducts, salesScheduleInfo);
+    // }
+
+    /**
+     * Returns the sales information based on the provided orders.
+     * @param period The array of orders to analyze.
+     * This function calculates the sales schedule information based on the provided orders.
+     * @returns The object based on period of sold.
+    */
+    getStatistic: async (period: 'day' | 'week' | 'month' | 'year'): Promise<StaticOrderInterface> => {
+        let startDate: Date = new Date();
+        startDate.setHours(0, 0, 0, 0);
+        let endDate: Date = new Date();
+        switch (period){
+            case 'day':
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'week':
+                startDate.setDate(startDate.getDate() - 7);
+                break;
+            case 'month':
+                startDate.setMonth(startDate.getMonth() - 1);
+                break;
+            case 'year':
+                startDate.setFullYear(startDate.getFullYear() - 1);
+                break;
+                default:
+            throw new Error(`Unknown period: ${period}`);
+        }
+
+
+        const orders: IOrder[] = await Order.find({
+            isPaid: true,
+            datePayment: { $gte: startDate, $lte: endDate }
+        });
+
+        const countOrders = orders.length;
+        const countRecieved = orders.filter(o => o.status === 'received').length;
+        const countReturned = orders.filter(o => o.status === 'return').length; 
+
+        let rawSalesData = orders.filter(order => order.datePayment).map(order => ({
+            date: order.datePayment!,
+            amountOrder: order.amountOrder
+        }));
+
+        return {
+            countOrders,
+            countRecieved,
+            countReturned,
+            rawSalesData,
+            start_date: startDate,
+            end_date: endDate
+        }
+    },
+
+    /**
+     * Returns the sales information and stock products for 30 day..
+     * @returns The array objects based on sales schedule information.
+    */
+    getSoldProducts: async(): Promise<soldProductData[]> => {
+        let startDate = new Date();
+        startDate.setDate(startDate.getDate()-30);
+
+        const products: IProduct[] = await Product.find()
+            .select('_id title price image stock')
+            .lean<IProduct[]>();
+        
+        const orders: IOrder[] = await Order.find({
+            isPaid: true,
+            datePayment: { $gte: startDate }
+        })
+        .select('products.productId products.quantity products.price')
+        .lean<IOrder[]>();;
+
+        const statistics: soldProductData[] = products.map(product => {
+            let soldCount = 0;
+            let soldAmount = 0;
+            orders.forEach(order => {
+                order.products.forEach(p => {
+                    if(p.productId.toString()===product._id.toString()){
+                        soldCount += p.quantity;
+                        soldAmount += p.price * p.quantity;
+                    }
+                })
+            })
+            return {
+                id: product._id.toString(),
+                title: product.title,
+                price: product.price,
+                image: product.image[0] || null,
+                soldCount,
+                soldAmount,
+                stock: product.stock
+            }
+        })
+        return statistics;
+    },
+
+    /**
+     * @param orderId unic id from model of Order
+     * Returns the sales information and stock products for 30 day..
+     * @returns The method which change order status on recieved and isPaid true according to Order of model.
+    */
+    markOrderAsPaid: async (orderId: string): Promise<IOrder | null> => {
+        const updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+            {
+            $set: {
+                isPaid: true,
+                status: 'received',
+                datePayment: new Date()
+            }
+        },
+        { new: true }
+        );
+        return updatedOrder;
+    },
+
+    /**
+     * @param orderId unic id from model of Order
+     * Returns the sales information and stock products for 30 day..
+     * @returns The method which change order status on retruned upon isPaid: true according to Order of model.
+    */
+
+    markOrderAsReturned: async(orderId: string): Promise<IOrder | null> => {
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        if (!order.isPaid) {
+            throw new Error('Order is not paid and cannot be marked as returned');
+        }
+
+        order.status = 'return';
+        await order.save();
+        return order;
     }
 }
 
@@ -464,4 +603,11 @@ function getSalesScheduleInfo(orders: IOrder[], endDateStr?: string): SalesSched
     }
 
     return salesScheduleInfo;
+}
+
+
+
+
+function setPaymentRecieved(orderId: string){
+
 }
